@@ -5,6 +5,7 @@ import NewArrival from "@/app/_components/NewArrival";
 import TopSelling from "@/app/_components/TopSelling";
 import BrowseStyle from "@/app/_components/BrowseStyle";
 import CommentSlider from "@/app/_components/CommentsSlider";
+import Footer from "@/app/_components/Footer";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
       <TopSelling />
       <BrowseStyle />
       <CommentSlider />
+      <Footer />
     </div>
   );
 }
