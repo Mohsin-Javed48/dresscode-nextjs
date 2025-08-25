@@ -6,7 +6,7 @@ import { ShoppingCart, User, Search } from "lucide-react";
 
 export default function page() {
   return (
-    <div className="w-full border-b">
+    <div className="w-full ">
       {/* Promo Bar */}
       {/* {showPromo && ( */}
       <div className="bg-black text-white text-sm flex justify-center items-center py-2 relative">
@@ -38,12 +38,12 @@ export default function page() {
         </div>
 
         {/* Search + Icons */}
-        <div className="flex items-center gap-8">
-          <Search className="cursor-pointer" />
+        <div className="relative flex items-center gap-8">
+          <Search className="absolute left-3 cursor-pointer text-[#c5c2c2]" />
           <input
             type="text"
             placeholder="Search for products..."
-            className="hidden md:block border placeholder:text-[#a0a0a0] border-none bg-[#f0f0f0] rounded-full px-4 py-2 w-[1000px] focus:outline-grey-500"
+            className="hidden md:block border placeholder:text-[#a0a0a0] border-none bg-[#f0f0f0] rounded-full pl-12 px-4 py-2 w-[1000px] focus:outline-grey-50"
           />
           <ShoppingCart className="cursor-pointer" />
           <User className="cursor-pointer" />
