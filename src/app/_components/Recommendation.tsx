@@ -43,7 +43,7 @@ export default function Page() {
     <section className="w-full flex flex-col justify-center items-center py-8 sm:py-12 lg:py-16 bg-gray-50">
       {/* Section Title */}
       <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-6 sm:mb-8 lg:mb-12 text-center px-4">
-        TOP SELLING
+        YOU MIGHT ALSO LIKE
       </h1>
 
       {/* Products Container */}
@@ -116,11 +116,6 @@ export default function Page() {
         </div>
 
         {/* View All Button */}
-        <div className="mt-10 text-center">
-          <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-8 text-sm sm:text-base lg:text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-md">
-            View All
-          </button>
-        </div>
       </div>
     </section>
   );

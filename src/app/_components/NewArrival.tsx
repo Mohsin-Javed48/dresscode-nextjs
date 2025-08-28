@@ -10,7 +10,7 @@ const products = [
     originalPrice: "$232",
     discountedPrice: "$212",
     discount: "20%",
-    image: "/placeholder-shirt.jpg", // Replace with your image path in public folder
+    image: "/placeholder-shirt.jpg",
   },
   {
     id: 2,
@@ -18,7 +18,7 @@ const products = [
     rating: 4.0,
     reviews: "20 reviews",
     price: "$145",
-    image: "/placeholder-tshirt.jpg", // Replace with your image path in public folder
+    image: "/placeholder-tshirt.jpg",
   },
   {
     id: 3,
@@ -26,7 +26,7 @@ const products = [
     rating: 3.0,
     reviews: "50 reviews",
     price: "$80",
-    image: "/placeholder-shorts.jpg", // Replace with your image path in public folder
+    image: "/placeholder-shorts.jpg",
   },
   {
     id: 4,
@@ -34,72 +34,94 @@ const products = [
     rating: 4.5,
     reviews: "100 reviews",
     price: "$310",
-    image: "/placeholder-jeans.jpg", // Replace with your image path in public folder
+    image: "/placeholder-jeans.jpg",
   },
 ];
 
-export default function page() {
+export default function Page() {
   return (
-    <div className="w-full h- flex flex-col justify-center items-center  py-16">
-      <h1 className="text-5xl font-extrabold mb-4">NEW ARRIVALS</h1>
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <section className="w-full flex flex-col justify-center items-center py-8 sm:py-12 lg:py-16 bg-gray-50">
+      {/* Section Title */}
+      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-6 sm:mb-8 lg:mb-12 text-center px-4">
+        NEW ARRIVALS
+      </h1>
+
+      {/* Products Container */}
+      <div className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 lg:gap-8">
           {products.map((product) => (
-            <div
+            <article
               key={product.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300"
+              className="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-lg border border-gray-100 hover:border-gray-200 transition-all duration-300 group overflow-hidden"
             >
-              <div className="relative w-full h-80">
+              {/* Product Image with Aspect Ratio */}
+              <div className="relative w-full aspect-[3/4] overflow-hidden">
                 <Image
                   src={product.image}
                   alt={product.name}
-                  layout="fill"
-                  objectFit="cover"
-                  className="transition-transform duration-300 hover:scale-105"
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                 />
+
+                {/* Discount Badge */}
+                {product.discount && (
+                  <span className="absolute top-3 left-3 bg-red-500 text-white text-xs sm:text-sm font-semibold px-2 py-1 rounded-full">
+                    -{product.discount}
+                  </span>
+                )}
               </div>
-              <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-800">
+
+              {/* Product Details */}
+              <div className="p-4 sm:p-5">
+                {/* Product Name */}
+                <h2 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-black transition-colors duration-200">
                   {product.name}
-                </h3>
-                <div className="flex items-center mt-2">
-                  <div className="flex text-yellow-400">
+                </h2>
+
+                {/* Rating */}
+                <div className="flex items-center mb-2 gap-1">
+                  <div className="flex text-yellow-400 text-sm sm:text-base">
                     {"★".repeat(Math.floor(product.rating)) +
                       "☆".repeat(5 - Math.floor(product.rating))}
                   </div>
-                  <span className="ml-2 text-sm text-gray-600">
-                    {product.rating} ({product.reviews})
+                  <span className="text-xs sm:text-sm text-gray-600">
+                    {product.rating}
+                  </span>
+                  <span className="text-xs sm:text-sm text-gray-500 hidden sm:inline">
+                    ({product.reviews})
                   </span>
                 </div>
-                <div className="mt-2">
+
+                {/* Price */}
+                <div className="flex flex-wrap items-center gap-2">
                   {product.discountedPrice ? (
                     <>
-                      <span className="text-xl font-bold text-gray-900">
+                      <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
                         {product.discountedPrice}
                       </span>
-                      <span className="ml-2 text-sm text-gray-500 line-through">
+                      <span className="text-sm sm:text-base text-gray-500 line-through">
                         {product.originalPrice}
-                      </span>
-                      <span className="ml-2 text-sm text-red-500">
-                        {product.discount}
                       </span>
                     </>
                   ) : (
-                    <span className="text-xl font-bold text-gray-900">
+                    <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
                       {product.price}
                     </span>
                   )}
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
-        <div className="mt-8 text-center">
-          <button className="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
+
+        {/* View All Button */}
+        <div className="mt-10 text-center">
+          <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-8 text-sm sm:text-base lg:text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-md">
             View All
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
