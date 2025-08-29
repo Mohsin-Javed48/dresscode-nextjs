@@ -8,10 +8,11 @@ export default function Page() {
         src="/hero-section-bg.jpg"
         alt="Hero section background"
         fill
-        className="object-cover"
+        className="object-contain"
+        priority
       />
 
-      <div className="absolute left-6 top-8  md:left-24 md:top-16 max-w-3xl px-4 ">
+      <div className="absolute left-6 top-8 sm:text-left   md:left-24 md:top-16 max-w-3xl px-4 ">
         <h1 className="font-extrabold text-4xl md:text-6xl lg:text-7xl ">
           FIND CLOTHES
         </h1>

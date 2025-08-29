@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Camera, X, Menu } from "lucide-react"; // Added Menu for mobile
 import { ShoppingCart, User, Search } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
 
 export default function Header() {
   const [showPromo, setShowPromo] = useState(true);
@@ -13,7 +15,7 @@ export default function Header() {
     <div className="w-full">
       {/* ✅ Promo Bar (Full Width) */}
       {showPromo && (
-        <div className="bg-black text-white text-xs sm:text-sm flex justify-center items-center py-2 px-4 relative w-full">
+        <div className="bg-black text-white text-xs sm:text-sm flex justify-center items-center sm:items-start py-2 px-4 relative w-full">
           <span className="text-center pr-8">
             Sign up and get 20% off your first order.{" "}
             <a href="#" className="underline font-semibold whitespace-nowrap">
@@ -30,7 +32,7 @@ export default function Header() {
       )}
 
       {/* ✅ Main Nav inside a container */}
-      <div className="w-full max-w-screen-3xl  mx-auto px-12  lg:px">
+      <div className="w-full max-w-screen-3xl mx-auto  sm:px-4 md:px-12 lg:px-12">
         <nav className="bg-white flex items-center justify-between py-3 sm:py-4 border-b border-gray-100">
           {/* Left Section */}
           <div className="flex items-center gap-4 sm:gap-6 lg:gap-12">
@@ -43,23 +45,33 @@ export default function Header() {
             </button>
 
             {/* Logo */}
-            <div className="text-lg sm:text-xl lg:text-2xl font-extrabold">
+            <div className="text-lg sm:text-xl lg:text-2xl font-extrabold flex flex-row gap-2 justify-center items-center">
+              <Image
+                src="/dresscode-icon.png"
+                alt="The Dresscode Logo"
+                width={45} // or any size
+                height={45}
+                priority
+              />
               DRESSCODE
             </div>
 
             {/* Desktop Menu Items */}
             <ul className="hidden md:flex gap-4 lg:gap-6 text-gray-700 text-sm lg:text-base">
               <li className="cursor-pointer hover:text-black transition-colors">
-                Shop ▾
+                <Link href="/">Home</Link>
               </li>
               <li className="cursor-pointer hover:text-black transition-colors">
-                On Sale
+                <Link href="/shop">Shop ▾</Link>
               </li>
               <li className="cursor-pointer hover:text-black transition-colors">
-                New Arrivals
+                <Link href="/about">About Us</Link>
               </li>
               <li className="cursor-pointer hover:text-black transition-colors">
-                Brands
+                <Link href="/contact">Contact</Link>
+              </li>
+              <li className="cursor-pointer hover:text-black transition-colors">
+                <Link href="/new-arival">New Arrival</Link>
               </li>
             </ul>
           </div>
@@ -117,13 +129,13 @@ export default function Header() {
                 Shop ▾
               </li>
               <li className="cursor-pointer hover:text-black transition-colors py-2 border-b border-gray-100 text-gray-700">
-                On Sale
+                About Us
               </li>
               <li className="cursor-pointer hover:text-black transition-colors py-2 border-b border-gray-100 text-gray-700">
-                New Arrivals
+                Contact
               </li>
               <li className="cursor-pointer hover:text-black transition-colors py-2 text-gray-700">
-                Brands
+                New Arrival
               </li>
             </ul>
           </div>
