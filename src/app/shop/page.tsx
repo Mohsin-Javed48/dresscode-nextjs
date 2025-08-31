@@ -331,7 +331,7 @@ const CategorySection = ({
     <div className="mb-12">
       <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 relative inline-block">
         {title}
-        <div className="absolute -bottom-2 left-0 w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+        <div className="absolute -bottom-4 left-0 w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
       </h2>
       <p className="text-xl text-gray-600 max-w-2xl">{subtitle}</p>
     </div>

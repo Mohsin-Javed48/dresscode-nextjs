@@ -1,44 +1,65 @@
 import Image from "next/image";
 import React from "react";
+import { getCloths } from "../../lib/data-service";
+import { RatingStar } from "@/app/_components/RatingStar";
+// const products = [
+//   {
+//     id: 1,
+//     name: "Vertical Striped Shirt",
+//     rating: 5.0,
+//     reviews: "0 reviews",
+//     originalPrice: "$232",
+//     discountedPrice: "$212",
+//     discount: "20%",
+//     image: "/placeholder-shirt.jpg",
+//   },
+//   {
+//     id: 2,
+//     name: "Courage Graphic T-Shirt",
+//     rating: 4.0,
+//     reviews: "20 reviews",
+//     price: "$145",
+//     image: "/placeholder-tshirt.jpg",
+//   },
+//   {
+//     id: 3,
+//     name: "Loose Fit Bermuda Shorts",
+//     rating: 3.0,
+//     reviews: "50 reviews",
+//     price: "$80",
+//     image: "/placeholder-shorts.jpg",
+//   },
+//   {
+//     id: 4,
+//     name: "Faded Skinny Jeans",
+//     rating: 4.5,
+//     reviews: "100 reviews",
+//     price: "$310",
+//     image: "/placeholder-jeans.jpg",
+//   },
+// ];
 
-const products = [
-  {
-    id: 1,
-    name: "Vertical Striped Shirt",
-    rating: 5.0,
-    reviews: "0 reviews",
-    originalPrice: "$232",
-    discountedPrice: "$212",
-    discount: "20%",
-    image: "/placeholder-shirt.jpg",
-  },
-  {
-    id: 2,
-    name: "Courage Graphic T-Shirt",
-    rating: 4.0,
-    reviews: "20 reviews",
-    price: "$145",
-    image: "/placeholder-tshirt.jpg",
-  },
-  {
-    id: 3,
-    name: "Loose Fit Bermuda Shorts",
-    rating: 3.0,
-    reviews: "50 reviews",
-    price: "$80",
-    image: "/placeholder-shorts.jpg",
-  },
-  {
-    id: 4,
-    name: "Faded Skinny Jeans",
-    rating: 4.5,
-    reviews: "100 reviews",
-    price: "$310",
-    image: "/placeholder-jeans.jpg",
-  },
-];
+interface Cloth {
+  id: number;
+  created_at: string; // timestampz comes as string in JS
+  title: string;
+  rating: number;
+  reviews: string;
+  price: number;
+  catogery: string;
+  style: string;
+  discount: number;
+  image: string;
+  size: string;
+  season: string;
+  stockAvailable: number;
+  description: string;
+  gender: string;
+}
 
-export default function Page() {
+export default async function Page() {
+  const products: Cloth[] = await getCloths();
+
   return (
     <section className="w-full flex flex-col justify-center items-center py-8 sm:py-12 lg:py-16 bg-gray-50">
       {/* Section Title */}
@@ -56,9 +77,9 @@ export default function Page() {
             >
               {/* Product Image with Aspect Ratio */}
               <div className="relative w-full aspect-[3/4] overflow-hidden">
-                <Image
+                <img
                   src={product.image}
-                  alt={product.name}
+                  alt={product.title}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
@@ -75,33 +96,37 @@ export default function Page() {
               {/* Product Details */}
               <div className="p-4 sm:p-5">
                 {/* Product Name */}
-                <h2 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-black transition-colors duration-200">
-                  {product.name}
+                <h2 className="text-sm sm:text-base text-left lg:text-lg font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-black transition-colors duration-200">
+                  {product.title}
                 </h2>
 
                 {/* Rating */}
                 <div className="flex items-center mb-2 gap-1">
                   <div className="flex text-yellow-400 text-sm sm:text-base">
-                    {"★".repeat(Math.floor(product.rating)) +
-                      "☆".repeat(5 - Math.floor(product.rating))}
+                    <RatingStar
+                      value={product.rating}
+                      readOnly
+                      size={20}
+                      className="sm:text-base"
+                    />
                   </div>
                   <span className="text-xs sm:text-sm text-gray-600">
-                    {product.rating}
+                    {product.rating}/5
                   </span>
-                  <span className="text-xs sm:text-sm text-gray-500 hidden sm:inline">
+                  {/* <span className="text-xs sm:text-sm text-gray-500 hidden sm:inline">
                     ({product.reviews})
-                  </span>
+                  </span> */}
                 </div>
 
                 {/* Price */}
                 <div className="flex flex-wrap items-center gap-2">
-                  {product.discountedPrice ? (
+                  {product.discount ? (
                     <>
                       <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
-                        {product.discountedPrice}
+                        Rs{product.price - product.discount}
                       </span>
                       <span className="text-sm sm:text-base text-gray-500 line-through">
-                        {product.originalPrice}
+                        Rs{product.price}
                       </span>
                     </>
                   ) : (

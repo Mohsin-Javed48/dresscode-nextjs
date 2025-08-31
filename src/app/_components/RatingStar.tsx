@@ -1,3 +1,4 @@
+"use client";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 
 type RatingProps = {
@@ -31,7 +32,7 @@ type RatingProps = {
   name?: string;
 };
 
-export const Rating: React.FC<RatingProps> = ({
+export const RatingStar: React.FC<RatingProps> = ({
   value,
   defaultValue = 0,
   onChange,

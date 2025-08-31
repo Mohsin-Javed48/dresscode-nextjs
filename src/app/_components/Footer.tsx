@@ -8,7 +8,7 @@ const ShopFooter = () => {
 
   const handleSubscribe = () => {
     // e.preventDefault();
-    console.log("Subscribe:", email);
+
     setEmail("");
   };
 
@@ -30,7 +30,7 @@ const ShopFooter = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="w-full sm:w-72 md:w-80 pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 rounded-full border-none outline-none text-sm sm:text-base text-gray-700 placeholder-gray-400"
+                className="w-full sm:w-72 md:w-80 pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 rounded-full border-none outline-none text-sm sm:text-base text-gray-700 placeholder-gray-400 bg-white"
               />
             </div>
             <button

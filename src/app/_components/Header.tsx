@@ -10,6 +10,15 @@ export default function Header() {
   const [showPromo, setShowPromo] = useState(true);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [active, setActive] = useState("/");
+
+  const navItems = [
+    { href: "/", label: "Home" },
+    { href: "/shop", label: "Shop ▾" },
+    { href: "/about", label: "About Us" },
+    { href: "/contact", label: "Contact" },
+    { href: "/new-arival", label: "New Arrival" },
+  ];
 
   return (
     <div className="w-full">
@@ -58,21 +67,19 @@ export default function Header() {
 
             {/* Desktop Menu Items */}
             <ul className="hidden md:flex gap-4 lg:gap-6 text-gray-700 text-sm lg:text-base">
-              <li className="cursor-pointer hover:text-black transition-colors">
-                <Link href="/">Home</Link>
-              </li>
-              <li className="cursor-pointer hover:text-black transition-colors">
-                <Link href="/shop">Shop ▾</Link>
-              </li>
-              <li className="cursor-pointer hover:text-black transition-colors">
-                <Link href="/about">About Us</Link>
-              </li>
-              <li className="cursor-pointer hover:text-black transition-colors">
-                <Link href="/contact">Contact</Link>
-              </li>
-              <li className="cursor-pointer hover:text-black transition-colors">
-                <Link href="/new-arival">New Arrival</Link>
-              </li>
+              {navItems.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={() => setActive(item.href)}
+                    className={`cursor-pointer hover:text-black transition-colors ${
+                      active === item.href ? "text-black font-semibold" : ""
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Rating } from "@/app/_components/RatingStart";
+import { RatingStar } from "@/app/_components/RatingStar";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function CommentSlider() {
@@ -156,7 +156,7 @@ export default function CommentSlider() {
                 <div className={cardClasses}>
                   {/* Stars using your Rating component */}
                   <div className="mb-2 sm:mb-3 transition-opacity duration-300">
-                    <Rating
+                    <RatingStar
                       value={comment.rating}
                       readOnly
                       size={14}
