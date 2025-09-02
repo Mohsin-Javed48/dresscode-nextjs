@@ -9,8 +9,6 @@ import ProductReviews from "@/app/_components/ProductReviews";
 import Recommendation from "@/app/_components/Recommendation";
 import Components from "@/app/_components/Components";
 import ShoppingCartScreen from "./_components/ShoppingCartScreen";
-import { supabase } from "@/app/_lib/supabase";
-import { getCloths } from "@/app/_lib/data-service";
 
 interface Cloth {
   id: number;
@@ -30,17 +28,42 @@ interface Cloth {
   gender: string;
 }
 
-export default async function Home() {
-  const cloths: Cloth[] = await getCloths();
-  console.log(cloths);
+export async function getProducts() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  console.log(baseUrl);
 
+  const res = await fetch(`${baseUrl}/api/products`, {
+    cache: "no-store", // optional, prevents caching in SSR
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch products");
+  }
+
+  const data = await res.json();
+  return data;
+}
+
+export default async function Home() {
+  const products = await getProducts();
+  console.log(products);
+  console.log(products);
   return (
     <div className="text-center relative">
-      <HeroSection />
+      {/* <HeroSection />
       <NewArrival />
       <TopSelling />
       <BrowseStyle />
-      <CommentSlider />
+      <CommentSlider /> */}
+      {/* <ul>
+        {products.map((p: any) => (
+          <li key={p._id}>
+            <h2>{p.title}</h2>
+            <p>Price: ${p.price}</p>
+            <p>Reviews: {p.reviews.length}</p>
+          </li>
+        ))}
+      </ul> */}
     </div>
   );
 }

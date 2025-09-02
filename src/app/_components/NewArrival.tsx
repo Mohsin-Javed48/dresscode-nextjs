@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-import { getCloths } from "../../lib/data-service";
+import { getCloths } from "../_lib/data-service";
 import { RatingStar } from "@/app/_components/RatingStar";
 // const products = [
 //   {
