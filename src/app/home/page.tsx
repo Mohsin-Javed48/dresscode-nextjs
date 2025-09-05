@@ -4,9 +4,5 @@ import NewArrival from "@/app/_components/NewArrival";
 import ProductReviews from "@/app/_components/ProductReviews";
 import TopSelling from "@/app/_components/TopSelling";
 export default function page() {
-  return (
-    <div>
-
-    </div>
-  );
+  return <div></div>;
 }
