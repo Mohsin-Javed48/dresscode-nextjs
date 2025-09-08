@@ -17,7 +17,7 @@ interface Cloth {
   rating: number;
   reviews: string;
   price: number;
-  catogery: string;
+  category: string;
   style: string;
   discount: number;
   image: string;
