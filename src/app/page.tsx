@@ -2,6 +2,7 @@ import Image from "next/image";
 import HeroSection from "@/app/_components/HeroSection";
 import NewArrival from "@/app/_components/NewArrival";
 import TopSelling from "@/app/_components/TopSelling";
+import TrendingNow from "@/app/_components/TrendingNow";
 import BrowseStyle from "@/app/_components/BrowseStyle";
 import CommentSlider from "@/app/_components/CommentsSlider";
 import AddToCart from "@/app/_components/AddToCart";
@@ -29,10 +30,10 @@ interface Cloth {
 }
 
 export async function getProducts() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   console.log(baseUrl);
 
-  const res = await fetch(`${baseUrl}/api/products`, {
+  const res = await fetch(`${baseUrl}/api/cloths`, {
     cache: "no-store", // optional, prevents caching in SSR
   });
 
@@ -50,20 +51,12 @@ export default async function Home() {
   console.log(products);
   return (
     <div className="text-center relative">
-      {/* <HeroSection />
+      <HeroSection />
       <NewArrival />
       <TopSelling />
+      <TrendingNow />
       <BrowseStyle />
-      <CommentSlider /> */}
-      {/* <ul>
-        {products.map((p: any) => (
-          <li key={p._id}>
-            <h2>{p.title}</h2>
-            <p>Price: ${p.price}</p>
-            <p>Reviews: {p.reviews.length}</p>
-          </li>
-        ))}
-      </ul> */}
+      <CommentSlider />
     </div>
   );
 }

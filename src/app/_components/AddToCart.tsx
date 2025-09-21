@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { Star, StarHalf, Plus, Minus, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
+export const revalidate = 0;
+
 export default function ProductPage() {
   const [selectedColor, setSelectedColor] = useState("olive");
   const [selectedSize, setSelectedSize] = useState("Large");
@@ -64,22 +66,6 @@ export default function ProductPage() {
 
   return (
     <div className="max-w-screen px-12  lg:px-12 py-6">
-      {/* Breadcrumb Navigation */}
-      <nav className="mb-6">
-        <ul className="flex flex-wrap items-center gap-2 text-sm">
-          {["Home", "Shop", "Men", "T-shirts"].map((item, index) => (
-            <li key={item} className="flex items-center">
-              <p className="text-gray-500 hover:text-gray-800 cursor-pointer">
-                {item}
-              </p>
-              {index < 3 && (
-                <ChevronRight className="w-4 h-4 text-gray-400 mx-2" />
-              )}
-            </li>
-          ))}
-        </ul>
-      </nav>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white p-6 rounded-lg shadow-sm">
         {/* Left Side: Images */}
         <div className="flex flex-col md:flex-row gap-4">

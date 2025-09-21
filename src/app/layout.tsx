@@ -3,6 +3,7 @@ import Header from "@/app/_components/Header";
 import Footer from "@/app/_components/Footer";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/_styles/globals.css";
+import ConditionalLayout from "@/app/_components/ConditionalLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,9 +34,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header />
-        {children}
-        <Footer />
+        <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>
   );

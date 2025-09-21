@@ -1,52 +1,39 @@
+"use client";
+
 import Image from "next/image";
 import React from "react";
-import { getCloths } from "../_lib/data-service";
+import { useRouter } from "next/navigation";
 import { RatingStar } from "@/app/_components/RatingStar";
-// const products = [
-//   {
-//     id: 1,
-//     name: "Vertical Striped Shirt",
-//     rating: 5.0,
-//     reviews: "0 reviews",
-//     originalPrice: "$232",
-//     discountedPrice: "$212",
-//     discount: "20%",
-//     image: "/placeholder-shirt.jpg",
-//   },
-//   {
-//     id: 2,
-//     name: "Courage Graphic T-Shirt",
-//     rating: 4.0,
-//     reviews: "20 reviews",
-//     price: "$145",
-//     image: "/placeholder-tshirt.jpg",
-//   },
-//   {
-//     id: 3,
-//     name: "Loose Fit Bermuda Shorts",
-//     rating: 3.0,
-//     reviews: "50 reviews",
-//     price: "$80",
-//     image: "/placeholder-shorts.jpg",
-//   },
-//   {
-//     id: 4,
-//     name: "Faded Skinny Jeans",
-//     rating: 4.5,
-//     reviews: "100 reviews",
-//     price: "$310",
-//     image: "/placeholder-jeans.jpg",
-//   },
-// ];
+import ClothItem from "./ClothItem";
+
+// Function to get cloths from MongoDB API
+async function getCloths() {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+  try {
+    const res = await fetch(`${baseUrl}/api/cloths`, {
+      cache: "no-store", // Ensure fresh data
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch cloths");
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching cloths:", error);
+    return [];
+  }
+}
 
 interface Cloth {
-  id: number;
-  created_at: string; // timestampz comes as string in JS
-  title: string;
+  _id: string;
+  name: string;
   rating: number;
   reviews: string;
   price: number;
-  catogery: string;
+  category: string;
   style: string;
   discount: number;
   image: string;
@@ -55,97 +42,105 @@ interface Cloth {
   stockAvailable: number;
   description: string;
   gender: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export default async function Page() {
-  const products: Cloth[] = await getCloths();
+export default function Page() {
+  const router = useRouter();
+  const [products, setProducts] = React.useState<Cloth[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [showAll, setShowAll] = React.useState(false);
+
+  React.useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const allProducts: Cloth[] = await getCloths();
+        // Filter products for newArrival category
+        const newArrivals = allProducts.filter(
+          (product) => product.category === "newArrival"
+        );
+        setProducts(newArrivals);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProducts();
+  }, []);
+
+  const handleViewAll = () => {
+    if (showAll) {
+      // If already showing all, navigate to shop page
+      router.push("/shop?category=newArrival");
+    } else {
+      // If showing limited, expand to show all
+      setShowAll(true);
+    }
+  };
+
+  // Show only first 4 products initially, or all if showAll is true
+  const displayedProducts = showAll ? products : products.slice(0, 4);
+
+  if (loading) {
+    return (
+      <section className="w-full py-16 bg-white">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            NEW ARRIVALS
+          </h1>
+        </div>
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="w-full flex flex-col justify-center items-center py-8 sm:py-12 lg:py-16 bg-gray-50">
-      {/* Section Title */}
-      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-6 sm:mb-8 lg:mb-12 text-center px-4">
-        NEW ARRIVALS
-      </h1>
+    <section className="w-full py-16 bg-white">
+      {/* Section Header */}
+      <div className="text-center mb-16">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          NEW ARRIVALS
+        </h1>
+        <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          Discover our latest collection of premium clothing
+        </p>
+      </div>
 
       {/* Products Container */}
-      <div className="container max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 lg:gap-8">
-          {products.map((product) => (
-            <article
-              key={product.id}
-              className="bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-lg border border-gray-100 hover:border-gray-200 transition-all duration-300 group overflow-hidden"
-            >
-              {/* Product Image with Aspect Ratio */}
-              <div className="relative w-full aspect-[3/4] overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                />
-
-                {/* Discount Badge */}
-                {product.discount && (
-                  <span className="absolute top-3 left-3 bg-red-500 text-white text-xs sm:text-sm font-semibold px-2 py-1 rounded-full">
-                    -{product.discount}
-                  </span>
-                )}
-              </div>
-
-              {/* Product Details */}
-              <div className="p-4 sm:p-5">
-                {/* Product Name */}
-                <h2 className="text-sm sm:text-base text-left lg:text-lg font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-black transition-colors duration-200">
-                  {product.title}
-                </h2>
-
-                {/* Rating */}
-                <div className="flex items-center mb-2 gap-1">
-                  <div className="flex text-yellow-400 text-sm sm:text-base">
-                    <RatingStar
-                      value={product.rating}
-                      readOnly
-                      size={20}
-                      className="sm:text-base"
-                    />
-                  </div>
-                  <span className="text-xs sm:text-sm text-gray-600">
-                    {product.rating}/5
-                  </span>
-                  {/* <span className="text-xs sm:text-sm text-gray-500 hidden sm:inline">
-                    ({product.reviews})
-                  </span> */}
-                </div>
-
-                {/* Price */}
-                <div className="flex flex-wrap items-center gap-2">
-                  {product.discount ? (
-                    <>
-                      <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
-                        Rs{product.price - product.discount}
-                      </span>
-                      <span className="text-sm sm:text-base text-gray-500 line-through">
-                        Rs{product.price}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
-                      {product.price}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </article>
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {displayedProducts.map((product) => (
+            <ClothItem key={product._id} product={product} />
           ))}
         </div>
 
-        {/* View All Button */}
-        <div className="mt-10 text-center">
-          <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-8 text-sm sm:text-base lg:text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-md">
-            View All
-          </button>
-        </div>
+        {/* View All Button - Only show if there are more than 4 items */}
+        {products.length > 4 && (
+          <div className="mt-12 text-center">
+            <button
+              onClick={handleViewAll}
+              className="bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-300 mr-4"
+            >
+              {showAll
+                ? "Shop All New Arrivals"
+                : `View All (${products.length} items)`}
+            </button>
+
+            {showAll && (
+              <button
+                onClick={() => setShowAll(false)}
+                className="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-300"
+              >
+                Show Less
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

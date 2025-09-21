@@ -31,11 +31,13 @@ const ShopFooter = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
                 className="w-full sm:w-72 md:w-80 pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 rounded-full border-none outline-none text-sm sm:text-base text-gray-700 placeholder-gray-400 bg-white"
+                suppressHydrationWarning
               />
             </div>
             <button
               onClick={handleSubscribe}
               className="w-full sm:w-72 md:w-80 bg-white text-black font-semibold py-2.5 sm:py-3 text-sm sm:text-base rounded-full hover:bg-gray-100 transition-colors"
+              suppressHydrationWarning
             >
               Subscribe to Newsletter
             </button>

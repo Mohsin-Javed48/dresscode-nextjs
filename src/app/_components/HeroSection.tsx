@@ -1,7 +1,8 @@
+"use client";
 import React from "react";
 import Image from "next/image";
 
-export default function Page() {
+export default function HeroSection() {
   return (
     <div className="relative w-full h-[600px] ">
       <Image
@@ -29,7 +30,10 @@ export default function Page() {
           of Pakistani design.
         </p>
 
-        <button className="bg-black text-white rounded-full py-3 px-8 mt-6 text-lg">
+        <button
+          className="bg-black text-white rounded-full py-3 px-8 mt-6 text-lg"
+          suppressHydrationWarning
+        >
           Shop Now
         </button>
 

@@ -1,8 +1,13 @@
 const Cloths = require("../models/cloths");
 
 async function handleGetAllCloths(req, res) {
-  const allCloths = await Cloths.find({});
-  return res.json({ status: "success", data: allCloths });
+  try {
+    const allCloths = await Cloths.find({});
+    return res.json(allCloths);
+  } catch (error) {
+    console.error("Error fetching cloths:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }
 
 // Create new cloth
@@ -23,7 +28,7 @@ async function handleCreateCloths(req, res) {
     }
 
     // Create new cloth in MongoDB
-    const cloth = await Cloth.create({
+    const cloth = await Cloths.create({
       name: body.name,
       rating: body.rating || 0,
       reviews: body.reviews || "",
@@ -50,9 +55,16 @@ async function handleCreateCloths(req, res) {
 }
 
 async function handleGetClothsById(req, res) {
-  const cloths = Cloths.findById(req.params.id);
-  if (!cloths) return res.status(404).send("NO USER FOUND");
-  return res.status(200).json({ cloths });
+  try {
+    const cloth = await Cloths.findById(req.params.id);
+    if (!cloth) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    return res.status(200).json(cloth);
+  } catch (error) {
+    console.error("Error fetching cloth by ID:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }
 
 module.exports = {

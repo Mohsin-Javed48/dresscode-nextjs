@@ -75,6 +75,7 @@ export default function CommentSlider() {
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:bg-gray-50 hover:scale-105"
             }`}
+            suppressHydrationWarning
           >
             <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
           </button>
@@ -86,6 +87,7 @@ export default function CommentSlider() {
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:bg-gray-50 hover:scale-105"
             }`}
+            suppressHydrationWarning
           >
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
           </button>
@@ -203,6 +205,7 @@ export default function CommentSlider() {
                   ? "bg-black scale-125"
                   : "bg-gray-300 hover:bg-gray-400"
               }`}
+              suppressHydrationWarning
             />
           ))}
         </div>

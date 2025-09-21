@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Camera, X, Menu } from "lucide-react"; // Added Menu for mobile
-import { ShoppingCart, User, Search } from "lucide-react";
+import { X, Menu } from "lucide-react"; // Added Menu for mobile
+import { ShoppingCart, Search } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import UserDropdown from "./UserDropdown";
 
 export default function Header() {
   const [showPromo, setShowPromo] = useState(true);
@@ -34,6 +35,7 @@ export default function Header() {
           <button
             className="absolute right-2 sm:right-4 lg:right-10 text-white hover:text-gray-300 transition-colors"
             onClick={() => setShowPromo(false)}
+            suppressHydrationWarning
           >
             <X size={16} className="sm:w-[18px] sm:h-[18px]" />
           </button>
@@ -92,6 +94,7 @@ export default function Header() {
                 type="text"
                 placeholder="Search for products..."
                 className="border placeholder:text-[#a0a0a0] border-none bg-[#f0f0f0] rounded-full pl-10 pr-4 py-2 w-64 xl:w-80 focus:outline-none focus:ring-2 focus:ring-gray-200 text-sm"
+                suppressHydrationWarning
               />
             </div>
 
@@ -104,12 +107,12 @@ export default function Header() {
             </button>
 
             {/* Icons */}
-            <button className="p-1">
+            <button className="p-1" suppressHydrationWarning>
               <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 hover:text-black transition-colors cursor-pointer" />
             </button>
-            <button className="p-1">
-              <User className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 hover:text-black transition-colors cursor-pointer" />
-            </button>
+
+            {/* User Dropdown */}
+            <UserDropdown />
           </div>
         </nav>
 
@@ -123,6 +126,7 @@ export default function Header() {
                 placeholder="Search for products..."
                 className="w-full border placeholder:text-[#a0a0a0] border-none bg-[#f0f0f0] rounded-full pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-200 text-sm"
                 autoFocus
+                suppressHydrationWarning
               />
             </div>
           </div>
@@ -145,6 +149,11 @@ export default function Header() {
                 New Arrival
               </li>
             </ul>
+
+            {/* Mobile User Section */}
+            <div className="px-3 sm:px-4 py-4 border-t border-gray-100">
+              <UserDropdown />
+            </div>
           </div>
         )}
       </div>
