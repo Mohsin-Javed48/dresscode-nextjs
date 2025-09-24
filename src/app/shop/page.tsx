@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { ShoppingCart, Search, Heart } from "lucide-react";
+import { ShoppingCart, Heart } from "lucide-react";
+import {
+  addItem as apiAddItem,
+  getOrCreateGuestId,
+} from "@/app/_lib/cartClient";
 import { RatingStar } from "@/app/_components/RatingStar";
 import Image from "next/image";
 
@@ -39,14 +43,14 @@ async function getCloths(): Promise<Cloth[]> {
 
 const ProductCard = ({
   product,
-  onAddToCart,
   onToggleWishlist,
   isWishlisted,
+  onAddToCart,
 }: {
   product: Cloth;
-  onAddToCart: (product: Cloth) => void;
   onToggleWishlist: (productId: string) => void;
   isWishlisted: boolean;
+  onAddToCart: (product: Cloth) => void;
 }) => {
   const originalPrice =
     product.discount > 0
@@ -175,11 +179,13 @@ const CategorySection = ({
 
 export default function ProductCategoriesPage() {
   const searchParams = useSearchParams();
-  const [cart, setCart] = useState<Cloth[]>([]);
+  // local wishlist only; cart updates go to backend
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [cloths, setCloths] = useState<Cloth[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showToast, setShowToast] = useState(false);
+  const [toastText, setToastText] = useState("");
 
   // Fetch cloths data
   useEffect(() => {
@@ -210,9 +216,28 @@ export default function ProductCategoriesPage() {
     }
   }, [searchParams]);
 
-  const handleAddToCart = (product: Cloth) => {
-    setCart((prev) => [...prev, product]);
-    alert(`${product.name} added to cart!`);
+  const handleAddToCart = async (product: Cloth) => {
+    try {
+      const userId = getOrCreateGuestId();
+      const priceNum = Number(product.price);
+      await apiAddItem(userId, {
+        productId: product._id,
+        name: product.name,
+        price: priceNum,
+        image: product.image,
+        size: Array.isArray(product.size)
+          ? product.size[0]
+          : String(product.size || ""),
+        color: product.gender,
+        quantity: 1,
+      });
+      setToastText(`${product.name} added to cart`);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 1000);
+    } catch (e) {
+      console.error(e);
+      alert("Failed to add to cart");
+    }
   };
 
   const handleToggleWishlist = (productId: string) => {
@@ -247,6 +272,11 @@ export default function ProductCategoriesPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {showToast && (
+        <div className="fixed left-1/2 -translate-x-1/2 bottom-6 z-50 bg-black text-white px-4 py-2 rounded-full shadow-lg text-sm">
+          {toastText || "Added to cart"}
+        </div>
+      )}
       {/* Header Section */}
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

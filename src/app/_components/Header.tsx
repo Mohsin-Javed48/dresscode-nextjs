@@ -6,12 +6,41 @@ import { ShoppingCart, Search } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import UserDropdown from "./UserDropdown";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { fetchCart, getOrCreateGuestId } from "@/app/_lib/cartClient";
 
 export default function Header() {
   const [showPromo, setShowPromo] = useState(true);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [active, setActive] = useState("/");
+  const [cartCount, setCartCount] = useState(0);
+  const router = useRouter();
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const id = getOrCreateGuestId();
+        const { cart } = await fetchCart(id);
+        const count = (cart.items || []).reduce(
+          (sum: number, i: any) => sum + (i.quantity || 0),
+          0
+        );
+        setCartCount(count);
+      } catch (_e) {}
+    };
+    load();
+    const onUpdate = () => load();
+    if (typeof window !== "undefined") {
+      window.addEventListener("cart:updated", onUpdate);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("cart:updated", onUpdate);
+      }
+    };
+  }, []);
 
   const navItems = [
     { href: "/", label: "Home" },
@@ -107,8 +136,17 @@ export default function Header() {
             </button>
 
             {/* Icons */}
-            <button className="p-1" suppressHydrationWarning>
+            <button
+              className="relative p-1"
+              suppressHydrationWarning
+              onClick={() => router.push("/cart")}
+            >
               <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 hover:text-black transition-colors cursor-pointer" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] leading-none px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
+                  {cartCount}
+                </span>
+              )}
             </button>
 
             {/* User Dropdown */}

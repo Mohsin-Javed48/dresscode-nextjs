@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { RatingStar } from "@/app/_components/RatingStar";
 import Image from "next/image";
 import { ShoppingCart, Heart, ArrowLeft } from "lucide-react";
+import { addItem as apiAddItem } from "@/app/_lib/cartClient";
+import { getOrCreateGuestId } from "@/app/_lib/cartClient";
 
 interface Product {
   _id: string;
@@ -46,6 +48,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -93,6 +96,30 @@ export default function ProductDetailPage() {
     product.discount > 0
       ? (product.price * (1 - product.discount / 100)).toFixed(2)
       : product.price;
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    try {
+      setAdding(true);
+      const userId = getOrCreateGuestId();
+      const priceNum = Number(discountedPrice);
+      await apiAddItem(userId, {
+        productId: product._id,
+        name: product.name,
+        price: priceNum,
+        image: product.image,
+        size: product.size,
+        color: product.gender, // using gender as color surrogate if not available
+        quantity: 1,
+      });
+      router.push("/cart");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to add to cart");
+    } finally {
+      setAdding(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -184,11 +211,12 @@ export default function ProductDetailPage() {
             {/* Action Buttons */}
             <div className="flex gap-4">
               <button
-                className="flex-1 bg-black text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-                disabled={product.stockAvailable === 0}
+                onClick={handleAddToCart}
+                className="flex-1 bg-black text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                disabled={product.stockAvailable === 0 || adding}
               >
                 <ShoppingCart className="w-5 h-5" />
-                Add to Cart
+                {adding ? "Adding..." : "Add to Cart"}
               </button>
               <button
                 onClick={() => setIsWishlisted(!isWishlisted)}

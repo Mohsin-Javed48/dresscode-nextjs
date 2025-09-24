@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const app = express();
@@ -5,8 +6,17 @@ const clothsRouter = require("./routes/cloths");
 const connectMongoDb = require("./connection");
 const logReqRes = require("./middlewares");
 const userRouter = require("./routes/user");
+const cartRouter = require("./routes/cart");
+const contactRouter = require("./routes/contact");
 
-connectMongoDb("mongodb://localhost:27017/dresscode")
+const port = process.env.PORT || 8000;
+
+// Use environment variable or fallback to local MongoDB
+const mongoUrl =
+  process.env.MONGODB_URL || "mongodb://localhost:27017/dresscode";
+
+console.log(process.env.MONGODB_URL);
+connectMongoDb(mongoUrl)
   .then(() => {
     console.log("Connected to MongoDB successfully");
   })
@@ -17,12 +27,18 @@ connectMongoDb("mongodb://localhost:27017/dresscode")
 // CORS middleware
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  );
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
   );
   res.header("Access-Control-Allow-Credentials", "true");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
   next();
 });
 
@@ -37,6 +53,8 @@ app.use(logReqRes("log.txt"));
 
 app.use("/api/cloths", clothsRouter);
 app.use("/api/user", userRouter);
-app.listen(8000, () => {
+app.use("/api/contact", contactRouter);
+app.use("/api/cart", cartRouter);
+app.listen(port, () => {
   console.log("Server running on port 8000");
 });

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const { createTokenForUser } = require("../services/authenticate");
 
 const userSchema = new mongoose.Schema(
   {

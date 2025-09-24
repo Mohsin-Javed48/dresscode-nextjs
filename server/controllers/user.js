@@ -2,6 +2,7 @@ const User = require("../models/user");
 const { v4: uuidv4 } = require("uuid");
 const { setUser } = require("../services/auth");
 const { getUser } = require("../services/auth");
+const { createTokenForUser } = require("../services/authenticate");
 
 async function handleRegister(req, res) {
   try {
@@ -83,6 +84,9 @@ async function handleLogin(req, res) {
         message: "Invalid email or password",
       });
     }
+
+    const token = createTokenForUser(user);
+    return token;
 
     const sessionId = uuidv4();
     setUser(sessionId, user);

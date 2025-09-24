@@ -10,6 +10,7 @@ import {
   Award,
   Heart,
 } from "lucide-react";
+import Image from "next/image";
 
 export default function AboutPage() {
   return (
@@ -31,9 +32,13 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="relative">
-              <div className="w-full h-96 bg-gradient-to-br from-pink-200 via-orange-200 to-yellow-200 rounded-2xl flex items-center justify-center">
-                <div className="w-32 h-32 bg-white/30 rounded-full"></div>
-              </div>
+              <Image
+                src="/about/about2.jpg"
+                alt="About"
+                width={600}
+                height={600}
+                className="rounded-2xl"
+              />
             </div>
           </div>
         </div>
@@ -84,9 +89,13 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="lg:order-1">
-              <div className="w-full h-96 bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 rounded-2xl flex items-center justify-center">
-                <div className="w-32 h-32 bg-white/30 rounded-full"></div>
-              </div>
+              <Image
+                src="/about/about1.jpg"
+                alt="About"
+                width={600}
+                height={600}
+                className="rounded-2xl"
+              />
             </div>
           </div>
         </div>
@@ -155,9 +164,13 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <div className="w-full h-96 bg-gradient-to-br from-green-200 via-teal-200 to-blue-200 rounded-2xl flex items-center justify-center">
-                <div className="w-32 h-32 bg-white/30 rounded-full"></div>
-              </div>
+              <Image
+                src="/about/about3.jpg"
+                alt="About"
+                width={600}
+                height={600}
+                className="rounded-2xl"
+              />
             </div>
             <div>
               <h2 className="text-4xl font-bold text-black mb-8">Our Values</h2>

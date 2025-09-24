@@ -1,39 +1,51 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  X,
-  Phone,
-  Mail,
-  MapPin,
-  Clock,
-  Send,
-  MessageCircle,
-  Headphones,
-  Package,
-} from "lucide-react";
+import { X, Phone, Mail, MapPin, Clock, Send } from "lucide-react";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
+    phoneNumber: "",
     email: "",
-    phone: "",
     subject: "",
     message: "",
   });
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = () => {
-    // Handle form submission
-    console.log("Form submitted:", formData);
-    alert("Message sent successfully! We'll get back to you soon.");
-    setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+  const handleSubmit = async () => {
+    try {
+      console.log("Form data:", formData);
+      const response = await fetch("http://localhost:8000/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to submit contact form");
+      }
+      alert("Message sent successfully! We'll get back to you soon.");
+      setFormData({
+        fullName: "",
+        phoneNumber: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -135,8 +147,8 @@ export default function ContactPage() {
                 </label>
                 <input
                   type="text"
-                  name="name"
-                  value={formData.name}
+                  name="fullName"
+                  value={formData.fullName}
                   onChange={handleInputChange}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
@@ -149,8 +161,8 @@ export default function ContactPage() {
                 </label>
                 <input
                   type="tel"
-                  name="phone"
-                  value={formData.phone}
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                   placeholder="+92 300 1234567"
@@ -203,7 +215,7 @@ export default function ContactPage() {
                 value={formData.message}
                 onChange={handleInputChange}
                 required
-                rows="6"
+                rows={6}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all resize-none"
                 placeholder="Tell us how we can help you..."
               ></textarea>

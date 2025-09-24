@@ -1,0 +1,9 @@
+Since you’re making e-commerce (users, cart, orders, products):
+
+Backend (Node.js/Express) → Deploy on Render (free).
+
+Database → Use MongoDB Atlas (free forever).
+
+Frontend (React/Next.js, etc.) → Deploy on Vercel or Netlify (free).
+
+This combo is 100% free and scalable enough for a local business app.
