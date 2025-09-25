@@ -23,12 +23,13 @@ export default function Header() {
       try {
         const id = getOrCreateGuestId();
         const { cart } = await fetchCart(id);
+        type CartLine = { quantity?: number };
         const count = (cart.items || []).reduce(
-          (sum: number, i: any) => sum + (i.quantity || 0),
+          (sum: number, line: CartLine) => sum + (line.quantity || 0),
           0
         );
         setCartCount(count);
-      } catch (_e) {}
+      } catch {}
     };
     load();
     const onUpdate = () => load();
@@ -45,6 +46,7 @@ export default function Header() {
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/shop", label: "Shop ▾" },
+    { href: "/orders", label: "Orders" },
     { href: "/about", label: "About Us" },
     { href: "/contact", label: "Contact" },
     { href: "/new-arival", label: "New Arrival" },
@@ -79,6 +81,7 @@ export default function Header() {
             {/* Mobile Menu Button */}
             <button
               className="md:hidden"
+              suppressHydrationWarning
               onClick={() => setShowMobileMenu(!showMobileMenu)}
             >
               <Menu size={24} className="text-gray-700" />
@@ -130,6 +133,7 @@ export default function Header() {
             {/* Mobile Search Button */}
             <button
               className="lg:hidden p-2"
+              suppressHydrationWarning
               onClick={() => setShowMobileSearch(!showMobileSearch)}
             >
               <Search className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
@@ -176,6 +180,9 @@ export default function Header() {
             <ul className="px-3 sm:px-4 py-4 space-y-4">
               <li className="cursor-pointer hover:text-black transition-colors py-2 border-b border-gray-100 text-gray-700">
                 Shop ▾
+              </li>
+              <li className="cursor-pointer hover:text-black transition-colors py-2 border-b border-gray-100 text-gray-700">
+                Orders
               </li>
               <li className="cursor-pointer hover:text-black transition-colors py-2 border-b border-gray-100 text-gray-700">
                 About Us

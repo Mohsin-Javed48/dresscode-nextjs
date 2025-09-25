@@ -2,7 +2,6 @@ const User = require("../models/user");
 const { v4: uuidv4 } = require("uuid");
 const { setUser } = require("../services/auth");
 const { getUser } = require("../services/auth");
-const { createTokenForUser } = require("../services/authenticate");
 
 async function handleRegister(req, res) {
   try {
@@ -85,8 +84,7 @@ async function handleLogin(req, res) {
       });
     }
 
-    const token = createTokenForUser(user);
-    return token;
+    // Issue session and cookie (JWT flow available via authenticate.js if needed)
 
     const sessionId = uuidv4();
     setUser(sessionId, user);

@@ -10,6 +10,7 @@ function calculateTotals(items) {
 async function getCart(req, res) {
   try {
     const { userId } = req.params;
+    console.log("userId", userId);
     let cart = await Cart.findOne({ userId });
     if (!cart) {
       cart = await Cart.create({ userId, items: [] });

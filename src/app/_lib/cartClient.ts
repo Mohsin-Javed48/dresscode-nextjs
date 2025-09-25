@@ -20,15 +20,28 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 export function getOrCreateGuestId(): string {
   if (typeof window === "undefined") return "";
   const KEY = "dresscode_guest_id";
-  let id = localStorage.getItem(KEY);
-  if (!id) {
-    // Create a 24-char hex string to resemble ObjectId to satisfy backend index
-    id = Array.from(crypto.getRandomValues(new Uint8Array(12)))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-    localStorage.setItem(KEY, id);
+  const userRaw = localStorage.getItem("user");
+  try {
+    if (userRaw) {
+      const parsed = JSON.parse(userRaw);
+      if (parsed?.id && typeof parsed.id === "string") {
+        return parsed.id as string;
+      }
+    }
+  } catch {
+    // ignore malformed user storage
   }
-  return id;
+
+  let gid = localStorage.getItem(KEY);
+  if (!gid) {
+    const gen =
+      globalThis.crypto && "randomUUID" in globalThis.crypto
+        ? (globalThis.crypto as Crypto).randomUUID()
+        : `${Date.now()}-${Math.random()}`;
+    gid = gen;
+    localStorage.setItem(KEY, gid);
+  }
+  return gid;
 }
 
 export async function fetchCart(userId: string) {

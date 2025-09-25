@@ -8,6 +8,7 @@ const logReqRes = require("./middlewares");
 const userRouter = require("./routes/user");
 const cartRouter = require("./routes/cart");
 const contactRouter = require("./routes/contact");
+const ordersRouter = require("./routes/orders");
 
 const port = process.env.PORT || 8000;
 
@@ -55,6 +56,7 @@ app.use("/api/cloths", clothsRouter);
 app.use("/api/user", userRouter);
 app.use("/api/contact", contactRouter);
 app.use("/api/cart", cartRouter);
+app.use("/api/orders", ordersRouter);
 app.listen(port, () => {
   console.log("Server running on port 8000");
 });

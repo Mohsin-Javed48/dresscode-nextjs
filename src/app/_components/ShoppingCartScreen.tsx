@@ -18,6 +18,7 @@ import {
   removeItem as apiRemoveItem,
   clearCart as apiClearCart,
   getOrCreateGuestId,
+  fetchCart,
 } from "@/app/_lib/cartClient";
 
 type CartItem = {
@@ -30,13 +31,29 @@ type CartItem = {
   image?: string;
 };
 
+type BackendCartItem = {
+  productId: unknown;
+  name: string;
+  size?: string;
+  color?: string;
+  price: number;
+  quantity: number;
+  image?: string;
+};
+
+const shippingOptions = [
+  { id: "standard", label: "Standard (3-5 days)", fee: 15 },
+  { id: "express", label: "Express (1-2 days)", fee: 30 },
+  { id: "pickup", label: "Store Pickup", fee: 0 },
+] as const;
+
 export default function ShoppingCart() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const [promoMessage, setPromoMessage] = useState<string>("");
-  const [shippingMethod, setShippingMethod] = useState("standard");
+  const [shippingMethod] = useState("standard");
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string>("");
 
@@ -46,18 +63,22 @@ export default function ShoppingCart() {
       try {
         const gid = getOrCreateGuestId();
         setUserId(gid);
-        const { cart } = await apiFetchCart(gid);
-        const mapped: CartItem[] = (cart.items || []).map((i: any) => ({
-          productId: String(i.productId),
-          name: i.name,
-          size: i.size,
-          color: i.color,
-          price: i.price,
-          quantity: i.quantity,
-          image: i.image,
-        }));
+        const { cart } = await fetchCart(gid);
+        console.log(cart);
+        const mapped: CartItem[] = (cart.items || []).map(
+          (i: BackendCartItem) => ({
+            productId: String(i.productId),
+            name: i.name,
+            size: i.size,
+            color: i.color,
+            price: i.price,
+            quantity: i.quantity,
+            image: i.image,
+          })
+        );
+        console.log(mapped);
         setItems(mapped);
-      } catch (_e) {
+      } catch {
         // keep empty cart
       } finally {
         setLoading(false);
@@ -80,17 +101,19 @@ export default function ShoppingCart() {
         color,
         quantity: nextQty,
       });
-      const mapped: CartItem[] = (cart.items || []).map((i: any) => ({
-        productId: String(i.productId),
-        name: i.name,
-        size: i.size,
-        color: i.color,
-        price: i.price,
-        quantity: i.quantity,
-        image: i.image,
-      }));
+      const mapped: CartItem[] = (cart.items || []).map(
+        (i: BackendCartItem) => ({
+          productId: String(i.productId),
+          name: i.name,
+          size: i.size,
+          color: i.color,
+          price: i.price,
+          quantity: i.quantity,
+          image: i.image,
+        })
+      );
       setItems(mapped);
-    } catch (_e) {
+    } catch {
       // ignore
     }
   };
@@ -103,17 +126,19 @@ export default function ShoppingCart() {
     if (!userId) return;
     try {
       const { cart } = await apiRemoveItem(userId, productId, { size, color });
-      const mapped: CartItem[] = (cart.items || []).map((i: any) => ({
-        productId: String(i.productId),
-        name: i.name,
-        size: i.size,
-        color: i.color,
-        price: i.price,
-        quantity: i.quantity,
-        image: i.image,
-      }));
+      const mapped: CartItem[] = (cart.items || []).map(
+        (i: BackendCartItem) => ({
+          productId: String(i.productId),
+          name: i.name,
+          size: i.size,
+          color: i.color,
+          price: i.price,
+          quantity: i.quantity,
+          image: i.image,
+        })
+      );
       setItems(mapped);
-    } catch (_e) {
+    } catch {
       // ignore
     }
   };
@@ -123,16 +148,10 @@ export default function ShoppingCart() {
     try {
       await apiClearCart(userId);
       setItems([]);
-    } catch (_e) {
+    } catch {
       setItems([]);
     }
   };
-
-  const shippingOptions = [
-    { id: "standard", label: "Standard (3-5 days)", fee: 15 },
-    { id: "express", label: "Express (1-2 days)", fee: 30 },
-    { id: "pickup", label: "Store Pickup", fee: 0 },
-  ] as const;
 
   const shippingFee = useMemo(() => {
     const found = shippingOptions.find((s) => s.id === shippingMethod);
@@ -353,6 +372,7 @@ export default function ShoppingCart() {
                     <button
                       onClick={() => router.push("/shop")}
                       className="w-full border border-gray-300 text-gray-900 py-3 rounded-full font-medium hover:bg-gray-50"
+                      suppressHydrationWarning
                     >
                       Continue Shopping
                     </button>
@@ -404,7 +424,7 @@ export default function ShoppingCart() {
               </div>
 
               {/* Promo Code */}
-              <div className="mb-4">
+              <div className="mb-4" suppressHydrationWarning>
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
                     <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -420,6 +440,7 @@ export default function ShoppingCart() {
                     <button
                       onClick={applyPromo}
                       className="px-6 py-3 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
+                      suppressHydrationWarning
                     >
                       Apply
                     </button>
@@ -427,6 +448,7 @@ export default function ShoppingCart() {
                     <button
                       onClick={removePromo}
                       className="px-6 py-3 border border-gray-300 text-gray-900 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors"
+                      suppressHydrationWarning
                     >
                       Remove
                     </button>
@@ -449,6 +471,7 @@ export default function ShoppingCart() {
                 <button
                   onClick={() => router.push("/shop")}
                   className="w-full border border-gray-300 text-gray-900 py-3 rounded-full font-medium hover:bg-gray-50"
+                  suppressHydrationWarning
                 >
                   Continue Shopping
                 </button>
