@@ -10,7 +10,6 @@ export type CartItemInput = {
 
 export type CartTotals = {
   subtotal: number;
-  tax?: number;
   shipping: number;
   total: number;
 };

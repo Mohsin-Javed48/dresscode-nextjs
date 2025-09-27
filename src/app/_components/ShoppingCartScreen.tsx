@@ -20,30 +20,11 @@ import {
   getOrCreateGuestId,
   fetchCart,
 } from "@/app/_lib/cartClient";
-
-type CartItem = {
-  productId: string;
-  name: string;
-  size?: string;
-  color?: string;
-  price: number;
-  quantity: number;
-  image?: string;
-};
-
-type BackendCartItem = {
-  productId: unknown;
-  name: string;
-  size?: string;
-  color?: string;
-  price: number;
-  quantity: number;
-  image?: string;
-};
+import { CartItem, BackendCartItem } from "@/types";
 
 const shippingOptions = [
-  { id: "standard", label: "Standard (3-5 days)", fee: 15 },
-  { id: "express", label: "Express (1-2 days)", fee: 30 },
+  { id: "standard", label: "Standard (3-5 days)", fee: 0 },
+  { id: "express", label: "Express (1-2 days)", fee: 0 },
   { id: "pickup", label: "Store Pickup", fee: 0 },
 ] as const;
 
@@ -155,7 +136,7 @@ export default function ShoppingCart() {
 
   const shippingFee = useMemo(() => {
     const found = shippingOptions.find((s) => s.id === shippingMethod);
-    return found ? found.fee : 15;
+    return found ? found.fee : 0;
   }, [shippingMethod]);
 
   const subtotal = useMemo(
@@ -180,14 +161,9 @@ export default function ShoppingCart() {
     return 0;
   }, [appliedPromo, shippingFee]);
 
-  const tax = Math.round((subtotal - computePromoDiscount) * 0.08);
   const total = Math.max(
     0,
-    subtotal -
-      computePromoDiscount +
-      shippingFee +
-      computeShippingAdjustment +
-      tax
+    subtotal - computePromoDiscount + shippingFee + computeShippingAdjustment
   );
 
   const applyPromo = () => {

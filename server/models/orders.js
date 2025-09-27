@@ -127,12 +127,6 @@ const orderSchema = new mongoose.Schema(
         min: 0,
         default: 0,
       },
-      tax: {
-        type: Number,
-        required: true,
-        min: 0,
-        default: 0,
-      },
       discount: {
         type: Number,
         min: 0,
@@ -202,10 +196,7 @@ orderSchema.methods.calculateTotal = function () {
     0
   );
   this.pricing.total =
-    this.pricing.subtotal +
-    this.pricing.shippingCost +
-    this.pricing.tax -
-    this.pricing.discount;
+    this.pricing.subtotal + this.pricing.shippingCost + this.pricing.discount;
   return this.pricing.total;
 };
 

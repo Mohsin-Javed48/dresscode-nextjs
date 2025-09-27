@@ -88,7 +88,10 @@ export default function Header() {
             </button>
 
             {/* Logo */}
-            <div className="text-lg sm:text-xl lg:text-2xl font-extrabold flex flex-row gap-2 justify-center items-center">
+            <div
+              className="text-lg sm:text-xl lg:text-2xl font-extrabold flex flex-row gap-2 justify-center items-center cursor-pointer"
+              onClick={() => router.push("/")}
+            >
               <Image
                 src="/dresscode-icon.png"
                 alt="The Dresscode Logo"

@@ -81,9 +81,8 @@ async function handleCreateOrder(req, res) {
       0
     );
     const shippingCost = Number(pricing?.shippingCost || 0);
-    const tax = Number(pricing?.tax || 0);
     const discount = Number(pricing?.discount || 0);
-    const total = subtotal + shippingCost + tax - discount;
+    const total = subtotal + shippingCost - discount;
 
     // Build order document
     const order = await Order.create({
@@ -109,7 +108,6 @@ async function handleCreateOrder(req, res) {
       pricing: {
         subtotal,
         shippingCost,
-        tax,
         discount,
         total,
       },

@@ -277,12 +277,6 @@ export default function OrderDetailsPage() {
                   {formatCurrency(order.pricing.shippingCost)}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Tax</span>
-                <span className="text-gray-900">
-                  {formatCurrency(order.pricing.tax)}
-                </span>
-              </div>
               {order.pricing.discount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Discount</span>

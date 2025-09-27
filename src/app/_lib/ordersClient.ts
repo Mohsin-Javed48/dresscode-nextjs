@@ -41,7 +41,6 @@ export type PaymentInfo = {
 export type OrderPricing = {
   subtotal: number;
   shippingCost: number;
-  tax: number;
   discount: number;
   total: number;
 };
@@ -89,7 +88,6 @@ export type CreateOrderRequest = {
   };
   pricing: {
     shippingCost: number;
-    tax: number;
     discount: number;
   };
   notes?: string;

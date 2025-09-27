@@ -1,27 +1,9 @@
 import { useRouter } from "next/navigation";
 import { RatingStar } from "./RatingStar";
 import Image from "next/image";
+import { Product, ProductCardProps } from "@/types";
 
-interface products {
-  _id: string;
-  name: string;
-  rating: number;
-  reviews: string;
-  price: number;
-  category: string;
-  style: string;
-  discount: number;
-  image: string;
-  size: string;
-  season: string;
-  stockAvailable: number;
-  description: string;
-  gender: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export default function ClothItem({ product }: { product: products }) {
+export default function ClothItem({ product }: ProductCardProps) {
   const router = useRouter();
   return (
     <div

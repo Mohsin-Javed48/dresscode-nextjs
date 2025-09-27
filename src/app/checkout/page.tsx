@@ -55,7 +55,6 @@ export default function CheckoutPage() {
 
   const [pricing, setPricing] = useState({
     shippingCost: 10.0,
-    tax: 0,
     discount: 0,
   });
 
@@ -74,7 +73,6 @@ export default function CheckoutPage() {
         ) || 0;
       setPricing((prev) => ({
         ...prev,
-        tax: subtotal * 0.085,
       }));
     } catch (err) {
       setError("Failed to load cart");
@@ -222,7 +220,7 @@ export default function CheckoutPage() {
       0
     ) || 0;
   const total =
-    subtotal + pricing.shippingCost + pricing.tax - pricing.discount;
+    subtotal + pricing.shippingCost - pricing.discount;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -525,12 +523,6 @@ export default function CheckoutPage() {
                     <span className="text-gray-500">Shipping</span>
                     <span className="text-gray-900">
                       {formatCurrency(pricing.shippingCost)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Tax</span>
-                    <span className="text-gray-900">
-                      {formatCurrency(pricing.tax)}
                     </span>
                   </div>
                   {pricing.discount > 0 && (
