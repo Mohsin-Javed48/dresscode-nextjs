@@ -7,7 +7,9 @@ export interface User {
   email: string;
   name: string;
   image?: string;
-  guestId?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
   role?: "customer" | "admin";
   createdAt?: Date;
   updatedAt?: Date;

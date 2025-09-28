@@ -19,6 +19,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 export function getOrCreateGuestId(): string {
   if (typeof window === "undefined") return "";
   const KEY = "dresscode_guest_id";
+  console.log("HELLLLLLLLLLLLLLLLLLLLLLLLLL");
   const userRaw = localStorage.getItem("user");
   try {
     if (userRaw) {

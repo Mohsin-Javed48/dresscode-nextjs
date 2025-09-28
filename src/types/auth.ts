@@ -11,11 +11,16 @@ export interface NextAuthUser {
   name: string;
   image?: string;
   guestId?: string;
+  role?: "customer" | "admin";
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface NextAuthSession {
   user: NextAuthUser;
   expires: string;
+  accessToken?: string;
+  provider?: string;
 }
 
 // ============================================================================
