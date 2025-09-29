@@ -1,7 +1,7 @@
 import NextAuth, { NextAuthConfig } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { getUser, createUser } from "./user";
-import { User } from "@/types";
+import { getUser, findOrCreateFromGoogle } from "./db";
+import { Types } from "mongoose";
 
 // Extend the built-in session types
 declare module "next-auth" {
@@ -67,36 +67,17 @@ const authConfig: NextAuthConfig = {
       return !!auth?.user;
     },
 
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       try {
         console.log("🔑 SignIn callback - User:", user.email);
 
-        // Check if user exists in our database
-        const existingUser = await getUser(user?.email || "");
-
-        if (!existingUser) {
-          // Split name into firstName and lastName
-          const fullName = user.name || "";
-          const nameParts = fullName.split(" ");
-          const firstName = nameParts[0] || "";
-          const lastName = nameParts.slice(1).join(" ") || "";
-
-          // Create new user with all necessary fields
-          const newUser: Partial<User> = {
-            email: user.email || "",
-            name: user.name || "",
-            firstName: firstName,
-            lastName: lastName,
-            image: user.image || "",
-            role: "customer", // Default role
-          };
-
-          await createUser(newUser as User);
-          console.log("✅ New user created:", user.email);
-        } else {
-          console.log("✅ Existing user found:", user.email);
+        // For Google OAuth, we'll handle user creation in the JWT callback
+        // This prevents circular dependency issues
+        if (account?.provider === "google") {
+          return true;
         }
 
+        // For other providers or manual sign-in, handle here if needed
         return true;
       } catch (error) {
         console.error("❌ SignIn error:", error);
@@ -124,11 +105,39 @@ const authConfig: NextAuthConfig = {
         token.lastName = nameParts.slice(1).join(" ") || "";
       }
 
-      // Fetch user data from database on each JWT creation
-      if (token.email) {
+      // Handle user creation and data fetching for Google OAuth
+      if (token.email && account?.provider === "google") {
+        try {
+          // Use the Google profile data to find or create user
+          const googleProfile = {
+            id: account.providerAccountId || "",
+            email: user?.email || "",
+            name: user?.name || "",
+            picture: user?.image,
+            locale: "en",
+          };
+
+          console.log("👤 Finding or creating Google user:", googleProfile);
+          const dbUser = await findOrCreateFromGoogle(googleProfile);
+
+          if (dbUser) {
+            token.userId = (dbUser._id as Types.ObjectId).toString();
+            token.firstName = dbUser.firstName || token.firstName;
+            token.lastName = dbUser.lastName || token.lastName;
+            token.phone = dbUser.phone;
+            token.role = dbUser.role || "customer";
+            token.createdAt = dbUser.createdAt;
+            token.updatedAt = dbUser.updatedAt;
+          }
+        } catch (error) {
+          console.error("Error handling Google user in JWT:", error);
+        }
+      } else if (token.email) {
+        // For non-Google users, just fetch existing data
         try {
           const dbUser = await getUser(token.email);
           if (dbUser) {
+            token.userId = (dbUser._id as Types.ObjectId).toString();
             token.firstName = dbUser.firstName || token.firstName;
             token.lastName = dbUser.lastName || token.lastName;
             token.phone = dbUser.phone;

@@ -34,7 +34,10 @@ export default function UserDropdown() {
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -57,17 +60,19 @@ export default function UserDropdown() {
       });
 
       if (response.ok) {
-        // Clear user data from localStorage
+        // Clear user data and token from localStorage
         localStorage.removeItem("user");
+        localStorage.removeItem("token");
         setUser(null);
         setIsOpen(false);
-        
+
         // Redirect to home page
         window.location.href = "/";
       } else {
         console.error("Logout failed");
         // Still clear local data even if server request fails
         localStorage.removeItem("user");
+        localStorage.removeItem("token");
         setUser(null);
         setIsOpen(false);
         window.location.href = "/";
@@ -76,6 +81,7 @@ export default function UserDropdown() {
       console.error("Logout error:", error);
       // Still clear local data even if server request fails
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
       setUser(null);
       setIsOpen(false);
       window.location.href = "/";
@@ -141,7 +147,7 @@ export default function UserDropdown() {
               <User className="w-4 h-4" />
               My Profile
             </Link>
-            
+
             <Link
               href="/orders"
               className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -150,7 +156,7 @@ export default function UserDropdown() {
               <ShoppingBag className="w-4 h-4" />
               My Orders
             </Link>
-            
+
             <Link
               href="/wishlist"
               className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -159,7 +165,7 @@ export default function UserDropdown() {
               <Heart className="w-4 h-4" />
               Wishlist
             </Link>
-            
+
             <Link
               href="/settings"
               className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
