@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 
 export default function Signup() {
   const router = useRouter();
+  console.log("routerrr", router);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -38,6 +39,7 @@ export default function Signup() {
       try {
         // Check if user data exists in localStorage
         const userData = localStorage.getItem("user");
+        console.log("userDataee", userData);
         if (userData) {
           // Verify the session is still valid by checking with the server
           const response = await fetch(
@@ -50,6 +52,7 @@ export default function Signup() {
               },
             }
           );
+          console.log("responseee", response);
 
           if (response.ok) {
             // User is already logged in, redirect to home
@@ -104,11 +107,11 @@ export default function Signup() {
       newErrors.email = "Email is invalid";
     }
 
-    if (!formData.phone) {
+    // Phone: allow +country code and 10-15 digits total
+    const phoneDigits = (formData.phone || "").replace(/\D/g, "");
+    if (!phoneDigits) {
       newErrors.phone = "Phone number is required";
-    } else if (
-      !/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/\s/g, ""))
-    ) {
+    } else if (phoneDigits.length < 10 || phoneDigits.length > 15) {
       newErrors.phone = "Phone number is invalid";
     }
 

@@ -3,24 +3,46 @@
 import { useState, useEffect, useRef } from "react";
 import { User, LogOut, Settings, ShoppingBag, Heart } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { useSession, signOut } from "next-auth/react";
+import { clearStoredTokens } from "../_lib/action";
 
 interface UserData {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   role: string;
+  image?: string;
 }
 
 export default function UserDropdown() {
+  const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isResolvingUser, setIsResolvingUser] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Check if user is logged in on component mount
   useEffect(() => {
+    console.log("sessionnnn", session);
+    // First check NextAuth session
+    if (session?.user) {
+      const userData: UserData = {
+        id: (session.user as { id?: string }).id || "",
+        name: session.user.name || "",
+        email: session.user.email || "",
+        role: (session.user as { role?: string }).role || "customer",
+        image: session.user.image || "",
+      };
+      setUser(userData);
+      setIsResolvingUser(false);
+      return;
+    }
+
+    // Fallback to localStorage
     const userData = localStorage.getItem("user");
+    console.log("userDataee", userData);
     if (userData) {
       try {
         setUser(JSON.parse(userData));
@@ -29,7 +51,8 @@ export default function UserDropdown() {
         localStorage.removeItem("user");
       }
     }
-  }, []);
+    setIsResolvingUser(false);
+  }, [session]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -51,37 +74,20 @@ export default function UserDropdown() {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:8000/api/user/logout", {
-        method: "POST",
-        credentials: "include", // Important for cookies
-        headers: {
-          "Content-Type": "application/json",
-        },
+      // Clear stored tokens
+      clearStoredTokens();
+
+      // Sign out from NextAuth
+      await signOut({
+        callbackUrl: "/",
       });
 
-      if (response.ok) {
-        // Clear user data and token from localStorage
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        setUser(null);
-        setIsOpen(false);
-
-        // Redirect to home page
-        window.location.href = "/";
-      } else {
-        console.error("Logout failed");
-        // Still clear local data even if server request fails
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        setUser(null);
-        setIsOpen(false);
-        window.location.href = "/";
-      }
+      setUser(null);
+      setIsOpen(false);
     } catch (error) {
       console.error("Logout error:", error);
-      // Still clear local data even if server request fails
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
+      // Still clear local data even if signOut fails
+      clearStoredTokens();
       setUser(null);
       setIsOpen(false);
       window.location.href = "/";
@@ -89,6 +95,16 @@ export default function UserDropdown() {
       setIsLoading(false);
     }
   };
+
+  // Show loading placeholder while session is loading or while resolving user
+  if (status === "loading" || isResolvingUser) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+        <div className="w-20 h-4 rounded bg-gray-200 animate-pulse" />
+      </div>
+    );
+  }
 
   // If user is not logged in, show login/signup buttons
   if (!user) {
@@ -118,11 +134,21 @@ export default function UserDropdown() {
         className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
         suppressHydrationWarning
       >
-        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-          <User className="w-4 h-4 text-gray-600" />
+        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+          {user.image ? (
+            <Image
+              src={user.image}
+              alt={`${user.name}}`}
+              width={32}
+              height={32}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <User className="w-4 h-4 text-gray-600" />
+          )}
         </div>
         <span className="hidden sm:block text-sm font-medium text-gray-700">
-          {user.firstName}
+          {user.name}
         </span>
       </button>
 
@@ -131,9 +157,7 @@ export default function UserDropdown() {
         <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 animate-in slide-in-from-top-2 duration-200">
           {/* User Info */}
           <div className="px-4 py-3 border-b border-gray-100">
-            <p className="text-sm font-medium text-gray-900">
-              {user.firstName} {user.lastName}
-            </p>
+            <p className="text-sm font-medium text-gray-900">{user.name}</p>
             <p className="text-xs text-gray-500">{user.email}</p>
           </div>
 

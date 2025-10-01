@@ -276,7 +276,10 @@ export async function findOrCreateFromGoogle(
 ): Promise<IUser> {
   try {
     const UserModel = await getUserModel();
-    return await UserModel.findOrCreateFromGoogle(googleProfile);
+    const newUser = await UserModel.findOrCreateFromGoogle(googleProfile);
+    // Note: localStorage is not available on server-side
+    // User data should be stored in localStorage on the client-side
+    return newUser;
   } catch (error) {
     console.error("Error finding or creating Google user:", error);
     throw error;

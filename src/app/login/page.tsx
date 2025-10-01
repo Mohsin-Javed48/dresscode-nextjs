@@ -5,10 +5,16 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signInWithGoogle } from "../_lib/action";
+import { useSession, signIn } from "next-auth/react";
+import {
+  storeJWTToken,
+  generateUserJWT,
+  mintAndStoreJWTFromSession,
+} from "../_lib/action";
 
 export default function Login() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -22,49 +28,82 @@ export default function Login() {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        // Check if user data exists in localStorage
-        const userData = localStorage.getItem("user");
-        if (userData) {
-          // Verify the session is still valid by checking with the server
-          const token = localStorage.getItem("token");
-          if (!token) {
-            localStorage.removeItem("user");
-            setIsCheckingAuth(false);
-            return;
-          }
+        console.log("🔍 Checking auth status...");
+        console.log("Session:", session);
+        console.log("Session user:", session?.user);
 
-          const response = await fetch(
-            "http://localhost:8000/api/user/verify-session",
-            {
-              method: "GET",
-              credentials: "include",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
+        // If user is authenticated via NextAuth, generate and store JWT
+        if (session?.user) {
+          console.log("✅ User is authenticated via NextAuth");
+
+          const userData = {
+            id: (session.user as { id?: string }).id || "",
+            email: session.user.email || "",
+            name: session.user.name || "",
+            role: (session.user as { role?: string }).role || "customer",
+            provider:
+              (session.user as { provider?: string }).provider || "google",
+          };
+
+          console.log("📝 User data for JWT:", userData);
+
+          // Prefer server-side mint to avoid browser jsonwebtoken issues
+          try {
+            const minted = await mintAndStoreJWTFromSession();
+            console.log(
+              "🎫 Minted JWT from server:",
+              minted ? minted.substring(0, 50) + "..." : "FAILED"
+            );
+            if (!minted) {
+              // Fallback: generate on client
+              const jwtToken = generateUserJWT(userData);
+              console.log("🎫 Fallback generated JWT token:", jwtToken);
+              storeJWTToken(jwtToken);
             }
-          );
-
-          if (response.ok) {
-            // User is already logged in, redirect to home
-            router.push("/");
-            return;
-          } else {
-            // Session is invalid, clear local data
-            localStorage.removeItem("user");
+            // Verify token was stored
+            const storedToken = localStorage.getItem("jwt_token");
+            console.log(
+              "🔍 Stored token verification:",
+              storedToken ? "SUCCESS" : "FAILED"
+            );
+          } catch (jwtError) {
+            console.error("❌ JWT mint/generate storage error:", jwtError);
           }
+
+          // Store user data in localStorage for compatibility
+          try {
+            localStorage.setItem(
+              "user",
+              JSON.stringify({
+                ...userData,
+                firstName: (session.user as { firstName?: string }).firstName,
+                lastName: (session.user as { lastName?: string }).lastName,
+                phone: (session.user as { phone?: string }).phone,
+                image: session.user.image,
+              })
+            );
+            console.log("💾 User data stored in localStorage");
+          } catch (storageError) {
+            console.error("❌ User data storage error:", storageError);
+          }
+
+          // Redirect to home
+          console.log("🚀 Redirecting to home...");
+          router.push("/");
+          return;
         }
       } catch (error) {
         console.error("Error checking auth status:", error);
         // On error, clear local data and allow login
         localStorage.removeItem("user");
+        localStorage.removeItem("jwt_token");
       } finally {
         setIsCheckingAuth(false);
       }
     };
 
     checkAuthStatus();
-  }, [router]);
+  }, [session, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -149,6 +188,21 @@ export default function Login() {
       </div>
     );
   }
+
+  const handleSigninWithGoogle = async () => {
+    try {
+      console.log("🚀 Starting Google sign-in...");
+
+      // NextAuth signIn redirects the user, it doesn't return user data directly
+      // The user data will be stored in localStorage when the session is available
+      // (handled in the useEffect above)
+      await signIn("google", { callbackUrl: "/" });
+
+      console.log("✅ Google sign-in initiated, user will be redirected...");
+    } catch (error) {
+      console.error("❌ Google sign-in error:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
@@ -323,17 +377,9 @@ export default function Login() {
           {/* Social Login Buttons */}
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={async () => {
-                try {
-                  await signInWithGoogle();
-                } catch (error) {
-                  console.error("Google sign-in failed:", error);
-                  setErrors({
-                    general: "Google sign-in failed. Please try again.",
-                  });
-                }
-              }}
+              onClick={() => handleSigninWithGoogle()}
               className="w-full bg-white border border-gray-200 text-gray-700 py-3 px-4 rounded-full font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              type="button"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
