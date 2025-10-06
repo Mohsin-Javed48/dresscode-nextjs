@@ -1,6 +1,7 @@
 const Order = require("../models/orders");
 const User = require("../models/user");
 const Cloth = require("../models/cloths");
+const emailService = require("../services/emailService");
 
 // Create a new order
 async function handleCreateOrder(req, res) {
@@ -126,6 +127,25 @@ async function handleCreateOrder(req, res) {
       .populate("user", "firstName lastName email")
       .populate("items.product", "name image price category");
 
+    // Send order confirmation email
+    try {
+      console.log("📧 Sending order confirmation email...");
+      const emailResult =
+        await emailService.sendOrderConfirmationEmail(populated);
+
+      if (emailResult.success) {
+        console.log("✅ Order confirmation email sent successfully");
+      } else {
+        console.error(
+          "❌ Failed to send order confirmation email:",
+          emailResult.error
+        );
+      }
+    } catch (emailError) {
+      console.error("❌ Error sending order confirmation email:", emailError);
+      // Don't fail the order creation if email fails
+    }
+
     return res.status(201).json({
       message: "Order created successfully",
       order: populated,
@@ -148,6 +168,16 @@ async function handleGetUserOrders(req, res) {
     if (!userId) {
       return res.status(401).json({
         message: "User authentication required",
+      });
+    }
+
+    // If the provided userId is not a valid ObjectId (e.g., guest UUID),
+    // return an empty list instead of throwing a CastError
+    const isValidObjectId = require("mongoose").Types.ObjectId.isValid(userId);
+    if (!isValidObjectId) {
+      return res.status(200).json({
+        orders: [],
+        pagination: { current: parseInt(page), pages: 0, total: 0 },
       });
     }
 
@@ -285,6 +315,31 @@ async function handleUpdateOrderStatus(req, res) {
       await order.save();
     }
 
+    // Send order status update email
+    try {
+      console.log("📧 Sending order status update email...");
+      const populatedOrder = await Order.findById(order._id)
+        .populate("user", "firstName lastName email")
+        .populate("items.product", "name image price category");
+
+      const emailResult = await emailService.sendOrderStatusUpdateEmail(
+        populatedOrder,
+        status
+      );
+
+      if (emailResult.success) {
+        console.log("✅ Order status update email sent successfully");
+      } else {
+        console.error(
+          "❌ Failed to send order status update email:",
+          emailResult.error
+        );
+      }
+    } catch (emailError) {
+      console.error("❌ Error sending order status update email:", emailError);
+      // Don't fail the status update if email fails
+    }
+
     return res.status(200).json({
       message: "Order status updated successfully",
       order: {
@@ -337,6 +392,31 @@ async function handleCancelOrder(req, res) {
     if (reason) {
       order.notes = reason;
       await order.save();
+    }
+
+    // Send order cancellation email
+    try {
+      console.log("📧 Sending order cancellation email...");
+      const populatedOrder = await Order.findById(order._id)
+        .populate("user", "firstName lastName email")
+        .populate("items.product", "name image price category");
+
+      const emailResult = await emailService.sendOrderStatusUpdateEmail(
+        populatedOrder,
+        "cancelled"
+      );
+
+      if (emailResult.success) {
+        console.log("✅ Order cancellation email sent successfully");
+      } else {
+        console.error(
+          "❌ Failed to send order cancellation email:",
+          emailResult.error
+        );
+      }
+    } catch (emailError) {
+      console.error("❌ Error sending order cancellation email:", emailError);
+      // Don't fail the cancellation if email fails
     }
 
     return res.status(200).json({

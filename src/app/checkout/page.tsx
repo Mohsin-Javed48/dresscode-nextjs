@@ -42,7 +42,7 @@ export default function CheckoutPage() {
     city: "",
     state: "",
     zipCode: "",
-    country: "United States",
+    country: "Pakistan",
   });
 
   const [paymentInfo, setPaymentInfo] = useState({
@@ -219,8 +219,7 @@ export default function CheckoutPage() {
       (sum: number, item: any) => sum + item.price * item.quantity,
       0
     ) || 0;
-  const total =
-    subtotal + pricing.shippingCost - pricing.discount;
+  const total = subtotal + pricing.shippingCost - pricing.discount;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -327,10 +326,9 @@ export default function CheckoutPage() {
                       value={shippingAddress.country}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      defaultValue="Pakistan"
                     >
-                      <option value="United States">United States</option>
-                      <option value="Canada">Canada</option>
-                      <option value="United Kingdom">United Kingdom</option>
+                      <option value="Pakistan">Pakistan</option>
                     </select>
                   </div>
                   <div className="sm:col-span-2">

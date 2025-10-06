@@ -13,6 +13,11 @@ const {
   register,
   logout,
   verifySession,
+  verifyOTP,
+  resendOTP,
+  forgotPassword,
+  verifyResetOTP,
+  resetPassword,
 } = require("../controllers/user");
 
 // Authentication routes
@@ -20,6 +25,15 @@ router.post("/login", login);
 router.post("/register", register);
 router.post("/logout", logout);
 router.get("/verify-session", verifySession);
+
+// OTP verification routes
+router.post("/verify-otp", verifyOTP);
+router.post("/resend-otp", resendOTP);
+
+// Password reset routes
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-otp", verifyResetOTP);
+router.post("/reset-password", resetPassword);
 
 // Google OAuth routes
 router.post("/google/callback", handleGoogleCallback);

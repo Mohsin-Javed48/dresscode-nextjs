@@ -5,6 +5,7 @@ const {
   verifyGoogleToken,
   validateGoogleProfile,
 } = require("../utils/googleAuth");
+const emailService = require("../services/emailService");
 
 // Generate JWT token
 const generateToken = (userId) => {
@@ -27,6 +28,14 @@ async function handleGoogleCallback(req, res) {
 
     // Verify Google token
     const googleProfile = await verifyGoogleToken(idToken);
+    console.log(
+      "🔍 Google OAuth - Full googleProfile received:",
+      googleProfile
+    );
+    console.log(
+      "🔍 Google OAuth - googleProfile.picture:",
+      googleProfile.picture
+    );
 
     // Validate profile data
     if (!validateGoogleProfile(googleProfile)) {
@@ -38,6 +47,7 @@ async function handleGoogleCallback(req, res) {
 
     // Find or create user
     const user = await User.findOrCreateFromGoogle(googleProfile);
+    console.log("🔍 User found/created:", user);
 
     if (!user) {
       return res.status(500).json({
@@ -49,11 +59,16 @@ async function handleGoogleCallback(req, res) {
     // Generate JWT token
     const token = generateToken(user._id);
 
+    // Get public profile and log it
+    const publicProfile = user.getPublicProfile();
+    console.log("🔍 Public profile being sent to frontend:", publicProfile);
+    console.log("🔍 User image in public profile:", publicProfile.image);
+
     // Return user data and token
     res.status(200).json({
       success: true,
       message: "Authentication successful",
-      user: user.getPublicProfile(),
+      user: publicProfile,
       token,
     });
   } catch (error) {
@@ -359,7 +374,7 @@ async function login(req, res) {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        message: "user not found",
       });
     }
 
@@ -412,11 +427,11 @@ async function login(req, res) {
   }
 }
 
-// Traditional register with email and password
+// Traditional register with email and password - sends OTP for verification
 async function register(req, res) {
   try {
-    const { email, password, firstName, lastName, phone } = req.body;
-
+    const { email, password, firstName, lastName, phone, image } = req.body;
+    console.log("register", JSON.stringify(req.body.image));
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({
         success: false,
@@ -437,7 +452,7 @@ async function register(req, res) {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create new user
+    // Create new user (not verified yet)
     const user = new User({
       email: email.toLowerCase(),
       password: hashedPassword,
@@ -445,20 +460,36 @@ async function register(req, res) {
       firstName,
       lastName,
       phone: phone || "",
+      image: image || "", // Include image if provided
       role: "customer",
       provider: "local",
+      verified: false,
     });
 
     await user.save();
 
-    // Generate JWT token
-    const token = generateToken(user._id);
+    // Generate OTP
+    const otp = user.generateOTP();
+    await user.save();
+
+    // Send OTP email
+    const emailResult = await emailService.sendOTPEmail(email, otp, "signup");
+
+    if (!emailResult.success) {
+      // If email fails, delete the user
+      await User.findByIdAndDelete(user._id);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send verification email. Please try again.",
+      });
+    }
 
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
-      user: user.getPublicProfile(),
-      token,
+      message:
+        "Registration successful. Please check your email for verification code.",
+      userId: user._id,
+      email: user.email,
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -536,6 +567,265 @@ async function verifySession(req, res) {
   }
 }
 
+// Verify OTP for email verification
+async function verifyOTP(req, res) {
+  try {
+    const { userId, otp, image } = req.body;
+
+    console.log("🔍 OTP verification request received:");
+    console.log("🔍 User ID:", userId);
+    console.log("🔍 OTP:", otp);
+    console.log("🔍 Image:", image);
+
+    if (!userId || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID and OTP are required",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const result = await user.verifyOTP(otp);
+
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message,
+      });
+    }
+
+    // Update user profile image if provided
+    if (image && image.trim() !== "") {
+      console.log("✅ Updating user profile image:", image);
+      user.image = image;
+      // user.save() may race with verifyOTP's save; refetch latest doc and update atomically
+      await User.updateOne({ _id: user._id }, { $set: { image } });
+      console.log("✅ User profile image updated successfully");
+    } else {
+      console.log("❌ No image provided or image is empty");
+    }
+
+    // Generate JWT token after successful verification
+    const token = generateToken(user._id);
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      user: user.getPublicProfile(),
+      token,
+    });
+  } catch (error) {
+    console.error("Verify OTP error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
+
+// Resend OTP for email verification
+async function resendOTP(req, res) {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Generate new OTP
+    const otp = user.generateOTP();
+    await user.save();
+
+    // Send OTP email
+    const emailResult = await emailService.sendOTPEmail(
+      user.email,
+      otp,
+      "signup"
+    );
+
+    if (!emailResult.success) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send verification email. Please try again.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Verification code sent successfully",
+    });
+  } catch (error) {
+    console.error("Resend OTP error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
+
+// Forgot password - send OTP
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found with this email",
+      });
+    }
+
+    // Generate reset OTP
+    const otp = user.generateResetOTP();
+    await user.save();
+
+    // Send OTP email
+    const emailResult = await emailService.sendOTPEmail(email, otp, "forgot");
+
+    if (!emailResult.success) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send reset email. Please try again.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset code sent to your email",
+      userId: user._id,
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
+
+// Verify reset OTP
+async function verifyResetOTP(req, res) {
+  try {
+    const { userId, otp } = req.body;
+
+    if (!userId || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID and OTP are required",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const result = user.verifyResetOTP(otp);
+
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      userId: user._id,
+    });
+  } catch (error) {
+    console.error("Verify reset OTP error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
+
+// Reset password with OTP
+async function resetPassword(req, res) {
+  try {
+    const { userId, newPassword } = req.body;
+
+    if (!userId || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID and new password are required",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check if user has verified reset OTP (resetOtp should be cleared after verification)
+    if (user.resetOtp && user.resetOtp.code) {
+      return res.status(400).json({
+        success: false,
+        message: "Please verify OTP first",
+      });
+    }
+
+    // Hash new password
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+}
+
 module.exports = {
   handleGoogleCallback,
   getUserByEmail,
@@ -549,4 +839,9 @@ module.exports = {
   register,
   logout,
   verifySession,
+  verifyOTP,
+  resendOTP,
+  forgotPassword,
+  verifyResetOTP,
+  resetPassword,
 };

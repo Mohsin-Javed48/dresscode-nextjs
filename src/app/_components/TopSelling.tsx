@@ -103,8 +103,8 @@ export default function Page() {
     }
   };
 
-  // Show only first 4 products initially, or all if showAll is true
-  const displayedProducts = showAll ? products : products.slice(0, 4);
+  // Show only first 5 products initially, or all if showAll is true
+  const displayedProducts = showAll ? products : products.slice(0, 5);
 
   if (loading) {
     return (
@@ -134,15 +134,15 @@ export default function Page() {
       </div>
 
       {/* Products Container */}
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="container max-w-7xl min-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
           {displayedProducts.map((product) => (
             <ClothItem key={product._id} product={product} />
           ))}
         </div>
 
-        {/* View All Button - Only show if there are more than 4 items */}
-        {products.length > 4 && (
+        {/* View All Button - Only show if there are more than 5 items */}
+        {products.length > 5 && (
           <div className="mt-12 text-center">
             <button
               onClick={handleViewAll}

@@ -13,9 +13,7 @@ async function getCart(req, res) {
   try {
     const { userId } = req.params;
     console.log("userId", userId);
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: "Invalid userId" });
-    }
+    // Allow string ids (guest ids) as well as ObjectIds
     let cart = await Cart.findOne({ userId });
     if (!cart) {
       cart = await Cart.create({ userId, items: [] });
@@ -31,9 +29,7 @@ async function getCart(req, res) {
 async function addItem(req, res) {
   try {
     const { userId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: "Invalid userId" });
-    }
+    // Accept string userId
     const {
       productId,
       name,
@@ -75,9 +71,7 @@ async function addItem(req, res) {
 async function updateQuantity(req, res) {
   try {
     const { userId, productId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: "Invalid userId" });
-    }
+    // Accept string userId
     const { size, color, quantity } = req.body || {};
     if (typeof quantity !== "number" || quantity < 1) {
       return res.status(400).json({ message: "Invalid quantity" });

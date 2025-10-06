@@ -53,7 +53,7 @@ const ShopFooter = () => {
             {/* Brand Column */}
             <div className="sm:col-span-2 lg:col-span-1 text-center sm:text-left">
               <h3 className="text-xl sm:text-2xl font-black text-black mb-3 sm:mb-4">
-                SHOP.CO
+                DRESSCODE
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed mb-4 sm:mb-6 max-w-xs mx-auto sm:mx-0">
                 We have clothes that suits your style and which you&apos;re

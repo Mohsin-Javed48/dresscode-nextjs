@@ -68,7 +68,37 @@ const userSchema = new mongoose.Schema(
     },
     verified: {
       type: Boolean,
-      default: true, // Google OAuth users are pre-verified
+      default: false, // Users need to verify email with OTP
+    },
+    // OTP fields for email verification
+    otp: {
+      code: {
+        type: String,
+        default: null,
+      },
+      expiresAt: {
+        type: Date,
+        default: null,
+      },
+      attempts: {
+        type: Number,
+        default: 0,
+      },
+    },
+    // Password reset OTP fields
+    resetOtp: {
+      code: {
+        type: String,
+        default: null,
+      },
+      expiresAt: {
+        type: Date,
+        default: null,
+      },
+      attempts: {
+        type: Number,
+        default: 0,
+      },
     },
   },
   {
@@ -116,15 +146,28 @@ userSchema.statics.findOrCreateFromGoogle = async function (googleProfile) {
       user.googleId = googleProfile.id;
       user.provider = "google";
       user.image = googleProfile.picture || user.image;
+      console.log(
+        "🔍 Existing user - googleProfile.picture:",
+        googleProfile.picture
+      );
+      console.log("🔍 Full googleProfile:", googleProfile);
       user.lastLogin = new Date();
       await user.save();
       return user;
     }
 
+    console.log(
+      "🔍 Existing user not found by googleId, trying by email",
+      user
+    );
+
     // Create new user
     const nameParts = googleProfile.name.split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
+
+    console.log("🔍 New user - googleProfile.picture:", googleProfile.picture);
+    console.log("🔍 Full googleProfile:", googleProfile);
 
     user = new this({
       googleId: googleProfile.id,
@@ -156,10 +199,95 @@ userSchema.methods.getPublicProfile = function () {
     phone: this.phone,
     role: this.role,
     isActive: this.isActive,
+    verified: this.verified,
     lastLogin: this.lastLogin,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
   };
+};
+
+// Method to generate and set OTP for email verification
+userSchema.methods.generateOTP = function () {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  this.otp = {
+    code: otp,
+    expiresAt: expiresAt,
+    attempts: 0,
+  };
+
+  return otp;
+};
+
+// Method to generate and set OTP for password reset
+userSchema.methods.generateResetOTP = function () {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  this.resetOtp = {
+    code: otp,
+    expiresAt: expiresAt,
+    attempts: 0,
+  };
+
+  return otp;
+};
+
+// Method to verify OTP for email verification
+userSchema.methods.verifyOTP = async function (inputOtp) {
+  console.log("🔍 Verifying OTP:", this.otp);
+  if (!this.otp || !this.otp.code) {
+    return { success: false, message: "No OTP found" };
+  }
+
+  if (this.otp.attempts >= 3) {
+    return { success: false, message: "Maximum OTP attempts exceeded" };
+  }
+
+  if (new Date() > this.otp.expiresAt) {
+    return { success: false, message: "OTP has expired" };
+  }
+
+  if (this.otp.code !== inputOtp) {
+    this.otp.attempts += 1;
+    await this.save();
+    return { success: false, message: "Invalid OTP" };
+  }
+
+  // OTP is valid, clear it and verify user
+  this.otp = { code: null, expiresAt: null, attempts: 0 };
+  this.verified = true;
+  await this.save();
+
+  return { success: true, message: "Email verified successfully" };
+};
+
+// Method to verify OTP for password reset
+userSchema.methods.verifyResetOTP = function (inputOtp) {
+  if (!this.resetOtp || !this.resetOtp.code) {
+    return { success: false, message: "No reset OTP found" };
+  }
+
+  if (this.resetOtp.attempts >= 3) {
+    return { success: false, message: "Maximum OTP attempts exceeded" };
+  }
+
+  if (new Date() > this.resetOtp.expiresAt) {
+    return { success: false, message: "OTP has expired" };
+  }
+
+  if (this.resetOtp.code !== inputOtp) {
+    this.resetOtp.attempts += 1;
+    this.save();
+    return { success: false, message: "Invalid OTP" };
+  }
+
+  // OTP is valid, clear it
+  this.resetOtp = { code: null, expiresAt: null, attempts: 0 };
+  this.save();
+
+  return { success: true, message: "OTP verified successfully" };
 };
 
 const User = mongoose.model("User", userSchema);

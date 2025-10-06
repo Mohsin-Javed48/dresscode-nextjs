@@ -20,16 +20,15 @@ const cartItemSchema = new mongoose.Schema(
 const cartSchema = new mongoose.Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       required: true,
-      ref: "User",
     },
     items: { type: [cartItemSchema], default: [] },
   },
   { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } }
 );
 
-// Ensure one cart per user
+// Ensure one cart per user (string id supports guests or authenticated users)
 cartSchema.index({ userId: 1 }, { unique: true });
 
 const Cart = mongoose.model("Cart", cartSchema);

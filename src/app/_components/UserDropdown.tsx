@@ -21,11 +21,18 @@ export default function UserDropdown() {
   const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isResolvingUser, setIsResolvingUser] = useState(true);
+  const [imageError, setImageError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Check if user is logged in on component mount
   useEffect(() => {
-    console.log("sessionnnn", session);
+    console.log("🔍 UserDropdown - session:", session);
+    console.log("🔍 UserDropdown - session.user:", session?.user);
+    console.log("🔍 UserDropdown - session.user.image:", session?.user?.image);
+
+    // Reset image error when user changes
+    setImageError(false);
+
     // First check NextAuth session
     if (session?.user) {
       const userData: UserData = {
@@ -35,6 +42,10 @@ export default function UserDropdown() {
         role: (session.user as { role?: string }).role || "customer",
         image: session.user.image || "",
       };
+      console.log("🔍 UserDropdown - User data from session:", userData);
+      console.log("🖼️ UserDropdown - User image URL:", userData.image);
+      console.log("🖼️ UserDropdown - Image exists:", !!userData.image);
+      console.log("🖼️ UserDropdown - Image length:", userData.image?.length);
       setUser(userData);
       setIsResolvingUser(false);
       return;
@@ -45,7 +56,13 @@ export default function UserDropdown() {
     console.log("userDataee", userData);
     if (userData) {
       try {
-        setUser(JSON.parse(userData));
+        const parsedUserData = JSON.parse(userData);
+        console.log("🔍 User data from localStorage:", parsedUserData);
+        console.log(
+          "🖼️ User image URL from localStorage:",
+          parsedUserData.image
+        );
+        setUser(parsedUserData);
       } catch (error) {
         console.error("Error parsing user data:", error);
         localStorage.removeItem("user");
@@ -135,13 +152,26 @@ export default function UserDropdown() {
         suppressHydrationWarning
       >
         <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-          {user.image ? (
+          {user.image && !imageError ? (
             <Image
               src={user.image}
-              alt={`${user.name}}`}
+              alt={`${user.name}`}
               width={32}
               height={32}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                console.error("🖼️ Image failed to load:", user.image);
+                console.error("🖼️ Image error event:", e);
+                setImageError(true);
+              }}
+              onLoad={() => {
+                console.log("🖼️ Image loaded successfully:", user.image);
+                setImageError(false);
+              }}
+              unoptimized={
+                user.image?.startsWith("data:") ||
+                user.image?.startsWith("blob:")
+              }
             />
           ) : (
             <User className="w-4 h-4 text-gray-600" />

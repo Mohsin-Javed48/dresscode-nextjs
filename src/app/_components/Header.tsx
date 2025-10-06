@@ -56,16 +56,28 @@ export default function Header() {
     <div className="w-full">
       {/* ✅ Promo Bar (Full Width) */}
       {showPromo && (
-        <div className="bg-black text-white text-xs sm:text-sm flex justify-center items-center sm:items-start py-2 px-4 relative w-full">
+        <div
+          className="bg-black text-white text-xs sm:text-sm flex justify-center items-center sm:items-start py-2 px-4 relative w-full cursor-pointer"
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push("/signup")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") router.push("/signup");
+          }}
+          suppressHydrationWarning
+        >
           <span className="text-center pr-8">
-            Sign up and get 20% off your first order.{" "}
-            <a href="#" className="underline font-semibold whitespace-nowrap">
+            Create your account to get started.{" "}
+            <span className="underline font-semibold whitespace-nowrap">
               Sign Up Now
-            </a>
+            </span>
           </span>
           <button
             className="absolute right-2 sm:right-4 lg:right-10 text-white hover:text-gray-300 transition-colors"
-            onClick={() => setShowPromo(false)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowPromo(false);
+            }}
             suppressHydrationWarning
           >
             <X size={16} className="sm:w-[18px] sm:h-[18px]" />
